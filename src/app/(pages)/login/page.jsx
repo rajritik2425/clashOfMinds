@@ -5,7 +5,6 @@ import { Button } from "../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
-import { Checkbox } from "../../components/ui/checkbox"
 import {
   Eye,
   EyeOff,
@@ -15,17 +14,56 @@ import {
   Trophy,
   Users,
   Star,
+  Loader2,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
-    console.log("Login attempt:", { email, password })
+    setError("")
+    setIsLoading(true)
+
+    try {
+      const response = await fetch(`/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      // Handle non-JSON responses
+      let data;
+      try {
+        data = await response.json();
+      } catch (error) {
+        throw new Error(await response.text());
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || `Login failed: ${response.status}`);
+      }
+
+      // Store the token
+      localStorage.setItem("token", data.token)
+
+      // Redirect to home page
+      router.push("/")
+    } catch (error) {
+      console.error("Login error:", error)
+      setError(error.message || "Failed to login. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -61,6 +99,12 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-2 rounded-lg text-sm text-center">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-300 font-medium">
@@ -74,6 +118,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 h-12"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -90,6 +135,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 h-12 pr-12"
                     required
+                    disabled={isLoading}
                   />
                   <Button
                     type="button"
@@ -97,6 +143,7 @@ export default function LoginPage() {
                     size="sm"
                     className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-slate-400 hover:text-slate-300"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
@@ -106,19 +153,40 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                 </div>
-                <Button variant="link" className="text-cyan-400 hover:text-cyan-300 p-0 h-auto">
+                <Button 
+                  variant="link" 
+                  className="text-cyan-400 hover:text-cyan-300 p-0 h-auto"
+                  onClick={() => router.push("/forgot-password")}
+                  disabled={isLoading}
+                >
                   Forgot password?
                 </Button>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold py-3 h-12 rounded-xl shadow-lg shadow-cyan-500/25 border border-cyan-400/30 transition-all duration-200"
+                className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 text-white font-bold py-3 h-12 rounded-xl shadow-lg shadow-cyan-500/25 border border-cyan-400/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
               >
-                <Shield className="w-5 h-5 mr-2" />
-                Enter Game
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Shield className="w-5 h-5 mr-2" />
+                    Enter Game
+                  </>
+                )}
               </Button>
-              <p className="text-slate-400 text-center">Don't have an account? <Link href="/signup" className="text-cyan-400 hover:text-cyan-300">Sign up</Link></p>
+              <p className="text-slate-400 text-center">
+                Don't have an account?{" "}
+                <Link 
+                  href="/signup" 
+                  className="text-cyan-400 hover:text-cyan-300"
+                  onClick={(e) => isLoading && e.preventDefault()}
+                >
+                  Sign up
+                </Link>
+              </p>
             </form>
           </CardContent>
         </Card>
