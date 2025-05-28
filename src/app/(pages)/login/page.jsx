@@ -16,16 +16,16 @@ import {
   Users,
   Star,
 } from "lucide-react"
+import Link from "next/link"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
 
   const handleLogin = (e) => {
     e.preventDefault()
-    console.log("Login attempt:", { email, password, rememberMe })
+    console.log("Login attempt:", { email, password })
   }
 
   return (
@@ -57,14 +57,14 @@ export default function LoginPage() {
             <CardTitle className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
               Game Portal
             </CardTitle>
-            <p className="text-slate-400 mt-2">Enter the battlefield</p>
+            <p className="text-slate-400">Login to the game</p>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-300 font-medium">
-                  Email or Username
+                  Email
                 </Label>
                 <Input
                   id="email"
@@ -105,15 +105,6 @@ export default function LoginPage() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(!!checked)}
-                    className="border-slate-600 data-[state=checked]:bg-cyan-600 data-[state=checked]:border-cyan-600"
-                  />
-                  <Label htmlFor="remember" className="text-sm text-slate-300 cursor-pointer">
-                    Remember me
-                  </Label>
                 </div>
                 <Button variant="link" className="text-cyan-400 hover:text-cyan-300 p-0 h-auto">
                   Forgot password?
@@ -127,41 +118,8 @@ export default function LoginPage() {
                 <Shield className="w-5 h-5 mr-2" />
                 Enter Game
               </Button>
+              <p className="text-slate-400 text-center">Don't have an account? <Link href="/signup" className="text-cyan-400 hover:text-cyan-300">Sign up</Link></p>
             </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-slate-800 px-4 text-slate-400">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="bg-slate-900/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:border-slate-500 h-12"
-              >
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M21.35 11.1H12v2.8h5.35c-.2 1.1-.8 2-1.7 2.65v2.2h2.75c1.6-1.5 2.5-3.75 2.5-6.5 0-.35-.05-.7-.15-1z"/>
-                  <path d="M12 21c2.4 0 4.45-.8 5.95-2.1l-2.75-2.2c-.75.5-1.7.8-2.7.8-2.1 0-3.9-1.4-4.55-3.3H5.1v2.1C6.55 19.15 9.1 21 12 21z"/>
-                  <path d="M7.45 13.2c-.15-.45-.25-.95-.25-1.45s.1-1 .25-1.45V8.2H5.1c-.55 1.05-.9 2.25-.9 3.55s.35 2.5.9 3.55l2.35-1.1z"/>
-                  <path d="M12 6.15c.9 0 1.7.3 2.35.85l1.7-1.7C15.1 4.25 13.6 3.75 12 3.75c-2.9 0-5.45 1.85-6.9 4.45l2.35 1.1c.65-1.9 2.45-3.3 4.55-3.3z"/>
-                </svg>
-                Google
-              </Button>
-
-              <Button
-                variant="outline"
-                className="bg-slate-900/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:border-slate-500 h-12"
-              >
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.02 0C5.4 0 .03 5.37.03 11.99c0 5.08 3.16 9.42 7.61 11.17-.1-.95-.2-2.4.04-3.44.22-.94 1.4-5.96 1.4-5.96s-.36-.72-.36-1.78c0-1.66.96-2.91 2.17-2.91 1.03 0 1.52.77 1.52 1.69 0 1.03-.65 2.57-.99 3.99-.29 1.19.6 2.16 1.77 2.16 2.13 0 3.77-2.24 3.77-5.49 0-2.86-2.06-4.87-5.01-4.87-3.41 0-5.41 2.56-5.41 5.2 0 1.03.4 2.14.89 2.74.1.12.11.23.08.34-.09.38-.29 1.2-.33 1.36-.05.23-.17.27-.4.17-1.5-.69-2.5-2.85-2.5-4.59 0-3.73 2.71-7.17 7.83-7.17 4.1 0 7.29 2.93 7.29 6.86 0 4.07-2.57 7.34-6.14 7.34-1.2 0-2.34-.62-2.72-1.36l-.74 2.83c-.27 1.03-1 2.33-1.5 3.12 1.12.35 2.3.54 3.54.54 6.62 0 12-5.37 12-12S18.64 0 12.02 0z"/>
-                </svg>
-                GitHub
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
