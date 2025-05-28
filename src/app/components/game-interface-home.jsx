@@ -202,7 +202,7 @@ export default function HomeGameInterface() {
           {/* Main Game Area */}
           <div className="lg:col-span-8">
             <Card className="bg-slate-800/30 border-slate-700 backdrop-blur-sm">
-              <CardContent className="p-6">
+              <CardContent className="pt-6 pb-0 pr-0 pl-0">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
                     BASE STRUCTURE
@@ -211,113 +211,126 @@ export default function HomeGameInterface() {
                 </div>
 
                 {/* Game Grid */}
-                <div className="grid grid-cols-10 gap-1 max-w-2xl mx-auto p-4 bg-slate-900/50 rounded-2xl border border-slate-600/30">
+                <div className="grid grid-cols-10 gap-1 p-4 bg-slate-900/50 rounded-2xl border border-slate-600/30">
                   {Array.from({ length: totalCells }, (_, i) => {
-                    const row = Math.floor(i / gridSize)
-                    const col = i % gridSize
-                    const building = buildingsData[row][col]
+                    const row = Math.floor(i / gridSize);
+                    const col = i % gridSize;
+                    const building = buildingsData[row][col];
+                    const isTownHallCell = (row === 4 || row === 5) && (col === 4 || col === 5);
+                    const isTopLeftTownHall = row === 4 && col === 4;
+
+                    // Skip rendering other town hall cells except top-left
+                    if (isTownHallCell && !isTopLeftTownHall) {
+                      return null;
+                    }
 
                     return (
                       <div
                         key={i}
                         className={`
-                          aspect-square border border-slate-600/50 rounded-lg cursor-pointer transition-all duration-200 relative
-                          ${selectedCell === i
-                            ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25"
-                            : hoveredCell === i
-                              ? "bg-slate-700/50 border-slate-500"
-                              : "bg-slate-800/30 hover:bg-slate-700/50"
+                          aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
+                          ${
+                            isTopLeftTownHall 
+                              ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
+                              : selectedCell === i
+                                ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
+                                : hoveredCell === i
+                                  ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                                  : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
+                        style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
                         onMouseEnter={() => handleCellMouseEnter(i)}
                         onMouseLeave={handleCellMouseLeave}
                       >
-                        {building && (
-                          <img
-                            src={building.image}
-                            alt={building.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        )}
-
-                        {hoveredCell === i && building && (
-                          <div
-                            className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
-                            onMouseEnter={handlePopupMouseEnter}
-                            onMouseLeave={handlePopupMouseLeave}
-                          >
-                            <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
-                              {/* Building Image */}
-                              <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
-                                  <img
-                                    src={building.image}
-                                    alt={building.name}
-                                    className="w-full h-full object-cover rounded-md"
-                                  />
+                        {isTopLeftTownHall ? (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                              <img 
+                                src="/TOWN_HALL_BASE.png" 
+                                alt="Town Hall" 
+                                className="w-full h-full object-contain p-2"
+                              />
+                              {hoveredCell === i && (
+                                <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
+                                  <div className="text-sm font-bold">Town Hall</div>
+                                  <div className="text-xs text-slate-300">Level 1</div>
                                 </div>
-                                <div>
-                                  <div className="text-sm font-bold text-white">{building.name}</div>
-                                  <div className="text-xs text-slate-300">Level {building.level}</div>
-                                </div>
-                              </div>
-
-                              {/* Stats */}
-                              <div className="space-y-2 mb-4">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-400">Health</span>
-                                  <span className="text-green-400 font-medium">{building.health}%</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-400">Upgrade Level</span>
-                                  <span className="text-yellow-400 font-medium">
-                                    {challengeCounts[building.assetId] || 0}/10
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Accept Challenge Button */}
-                              <Button
-                                size="sm"
-                                className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  const assetId = building.assetId
-                                  setChallengeCounts((prev) => {
-                                    const currentCount = prev[assetId] || 0
-                                    const newCount = currentCount + 1
-
-                                    // Reset to 0 if count reaches 10
-                                    if (newCount >= 10) {
-                                      return {
-                                        ...prev,
-                                        [assetId]: 0,
-                                      }
-                                    }
-
-                                    return {
-                                      ...prev,
-                                      [assetId]: newCount,
-                                    }
-                                  })
-                                  console.log(
-                                    `Challenge accepted for ${building.name} at level ${building.level}. Count: ${(challengeCounts[building.assetId] || 0) + 1}`,
-                                  )
-                                }}
-                              >
-                                <Shield className="w-3 h-3 mr-1" />
-                                Accept Challenge
-                              </Button>
-
-                              {/* Arrow pointing down */}
-                              <div className="absolute top-full left-1/2 transform -translate-x-1/2">
-                                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95"></div>
-                              </div>
+                              )}
                             </div>
                           </div>
+                        ) : (
+                          <>
+                            {building && (
+                              <img
+                                src={building.image}
+                                alt={building.name}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            )}
+                            {hoveredCell === i && building && (
+                              <div
+                                className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
+                                onMouseEnter={handlePopupMouseEnter}
+                                onMouseLeave={handlePopupMouseLeave}
+                              >
+                                <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
+                                      <img
+                                        src={building.image}
+                                        alt={building.name}
+                                        className="w-full h-full object-cover rounded-md"
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-bold text-white">{building.name}</div>
+                                      <div className="text-xs text-slate-300">Level {building.level}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2 mb-4">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-slate-400">Health</span>
+                                      <span className="text-green-400 font-medium">{building.health}%</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-slate-400">Upgrade Level</span>
+                                      <span className="text-yellow-400 font-medium">
+                                        {challengeCounts[building.assetId] || 0}/10
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const assetId = building.assetId;
+                                      setChallengeCounts((prev) => {
+                                        const currentCount = prev[assetId] || 0;
+                                        const newCount = currentCount + 1;
+                                        return newCount >= 10
+                                          ? { ...prev, [assetId]: 0 }
+                                          : { ...prev, [assetId]: newCount };
+                                      });
+                                    }}
+                                  >
+                                    <Shield className="w-3 h-3 mr-1" />
+                                    Accept Challenge
+                                  </Button>
+
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </CardContent>
