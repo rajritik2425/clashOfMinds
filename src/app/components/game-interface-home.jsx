@@ -1,80 +1,107 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { Badge } from "./ui/badge"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
 import Link from "next/link"
+import BattleLogsModal from './BattleLogsModal'
 
-const buildingTypes = [
-  {
-    name: "Town Hall",
-    image: "/TOWN_HALL_BASE.png",
-  },
-  {
-    name: "Barracks",
-    image: "https://cdn-icons-png.flaticon.com/512/1183/1183621.png",
-  },
-  {
-    name: "Gold Mine",
-    image: "https://cdn-icons-png.flaticon.com/512/2753/2753924.png",
-  },
-  {
-    name: "Elixir Collector",
-    image: "https://cdn-icons-png.flaticon.com/512/1486/1486486.png",
-  },
-]
-
-// Dummy buildings data
-const buildingsData = Array(10).fill(null).map(() => 
-  Array(10).fill(null).map(() => {
-    // Randomly decide if this cell should have a building (30% chance)
-    if (Math.random() < 0.3) {
-      const buildingTypes = [
-        { name: "Town Hall", image: "/TOWN_HALL.jpg", level: Math.floor(Math.random() * 5) + 1 },
-        { name: "Barracks", image: "/BARRACKS.jpg", level: Math.floor(Math.random() * 5) + 1 },
-        { name: "Gold Mine", image: "/GOLD_MINE.jpg", level: Math.floor(Math.random() * 5) + 1 },
-        { name: "Elixir Collector", image: "/ELIXIR_COLLECTOR.jpg", level: Math.floor(Math.random() * 5) + 1 }
-      ];
-      return buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
-    }
-    return null;
-  })
-);
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
   const [hoveredCell, setHoveredCell] = useState(null)
+  const [trophies, setTrophies] = useState(0)
+  const hoverTimeoutRef = useRef(null)
+  const isHoveringPopupRef = useRef(false)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
   const [buildingsData, setBuildingsData] = useState([])
+  const [challengeCounts, setChallengeCounts] = useState({})
+
+  const fetchBaseData = async () => {
+    try {
+      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7', {
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
+        }
+      });
+
+      const data = await response.json();
+
+      // Initialize empty grid
+      const tempGrid = Array(gridSize)
+        .fill(null)
+        .map(() => Array(gridSize).fill(null));
+
+      // Place buildings at their correct positions
+      data.base.forEach(building => {
+        const [row, col] = building.index;
+        tempGrid[row][col] = {
+          name: building.name, // You might want to map this to a proper name
+          image: building.imageURL,
+          level: building.level,
+          health: building.health,
+          assetId: building.assetId,
+          _id: building._id
+        };
+      });
+
+      setBuildingsData(tempGrid);
+    } catch (error) {
+      console.error('Error fetching base data:', error);
+    }
+  };
+  const [showModal, setShowModal] = useState(false);
+
 
   useEffect(() => {
-    const tempGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null))
 
-    // Generate 10 unique random positions
-    const positions = new Set()
-    while (positions.size < 10) {
-      const row = Math.floor(Math.random() * gridSize)
-      const col = Math.floor(Math.random() * gridSize)
-      positions.add(`${row},${col}`)
-    }
+    fetchBaseData();
+  }, []);
 
-    // Place buildings at those positions
-    positions.forEach(pos => {
-      const [row, col] = pos.split(',').map(Number)
-      const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)]
-      tempGrid[row][col] = {
-        ...type,
-        level: Math.floor(Math.random() * 5) + 1,
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
       }
-    })
-
-    setBuildingsData(tempGrid)
+    }
   }, [])
+
+  const clearHoverTimeout = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+  }
+
+  const handleCellMouseEnter = (cellIndex) => {
+    clearHoverTimeout()
+    setHoveredCell(cellIndex)
+  }
+
+  const handleCellMouseLeave = () => {
+    // Only start the timeout if we're not hovering over the popup
+    if (!isHoveringPopupRef.current) {
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredCell(null)
+      }, 500) // Increased delay for better UX
+    }
+  }
+
+  const handlePopupMouseEnter = () => {
+    clearHoverTimeout()
+    isHoveringPopupRef.current = true
+  }
+
+  const handlePopupMouseLeave = () => {
+    isHoveringPopupRef.current = false
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredCell(null)
+    }, 200) // Shorter delay when leaving popup
+  }
 
   if (buildingsData.length === 0) return null
 
@@ -129,8 +156,11 @@ export default function HomeGameInterface() {
                   variant="outline"
                   className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold"
                 >
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Trophies
+                  <div className="flex gap-2 items-center">
+                    <Trophy className="w-4 h-4" />
+                    <span>Trophies</span>
+                    <span className="text-amber-400 font-bold">{trophies}</span>
+                  </div>
                 </Button>
               </CardContent>
             </Card>
@@ -160,10 +190,14 @@ export default function HomeGameInterface() {
                     <span className="text-slate-300">Losses</span>
                     <span className="text-red-400 font-bold">23</span>
                   </div>
+                  <span onClick={() => { setShowModal(true) }} className="text-sm cursor-pointer underline text-blue-200">📜 View Battle Logs</span>
                 </div>
               </CardContent>
             </Card>
           </div>
+          <BattleLogsModal showModal={showModal} setShowModal={setShowModal} />
+
+
 
           {/* Main Game Area */}
           <div className="lg:col-span-8">
@@ -206,9 +240,8 @@ export default function HomeGameInterface() {
                           }
                         `}
                         style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
-                        // onClick={() => !isTownHallCell && setSelectedCell(selectedCell === i ? null : i)}
-                        onMouseEnter={() => setHoveredCell(i)}
-                        onMouseLeave={() => setHoveredCell(null)}
+                        onMouseEnter={() => handleCellMouseEnter(i)}
+                        onMouseLeave={handleCellMouseLeave}
                       >
                         {isTopLeftTownHall ? (
                           <div className="absolute inset-0 flex items-center justify-center">
@@ -229,13 +262,69 @@ export default function HomeGameInterface() {
                         ) : (
                           <>
                             {building && (
-                              <img src={building.image} alt={building.name} className="w-full h-full object-cover rounded-lg" />
+                              <img
+                                src={building.image}
+                                alt={building.name}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
                             )}
-                            
                             {hoveredCell === i && building && (
-                              <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
-                                <div className="text-sm font-bold">{building.name}</div>
-                                <div className="text-xs text-slate-300">Level {building.level}</div>
+                              <div
+                                className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
+                                onMouseEnter={handlePopupMouseEnter}
+                                onMouseLeave={handlePopupMouseLeave}
+                              >
+                                <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
+                                      <img
+                                        src={building.image}
+                                        alt={building.name}
+                                        className="w-full h-full object-cover rounded-md"
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-bold text-white">{building.name}</div>
+                                      <div className="text-xs text-slate-300">Level {building.level}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2 mb-4">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-slate-400">Health</span>
+                                      <span className="text-green-400 font-medium">{building.health}%</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-slate-400">Upgrade Level</span>
+                                      <span className="text-yellow-400 font-medium">
+                                        {challengeCounts[building.assetId] || 0}/10
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const assetId = building.assetId;
+                                      setChallengeCounts((prev) => {
+                                        const currentCount = prev[assetId] || 0;
+                                        const newCount = currentCount + 1;
+                                        return newCount >= 10
+                                          ? { ...prev, [assetId]: 0 }
+                                          : { ...prev, [assetId]: newCount };
+                                      });
+                                    }}
+                                  >
+                                    <Shield className="w-3 h-3 mr-1" />
+                                    Accept Challenge
+                                  </Button>
+
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </>
@@ -244,8 +333,6 @@ export default function HomeGameInterface() {
                     );
                   })}
                 </div>
-
-                {/* <div className="text-center mt-4 text-sm text-slate-400">Click on grid cells to place structures</div> */}
               </CardContent>
             </Card>
           </div>
@@ -357,4 +444,3 @@ export default function HomeGameInterface() {
     </div>
   )
 }
-
