@@ -5,6 +5,7 @@ import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
+import Link from "next/link"
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
@@ -26,13 +27,15 @@ export default function HomeGameInterface() {
         <div className="flex justify-between items-center mb-6">
           {/* Left Side */}
           <div className="flex items-center gap-4">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
-            >
-              <User className="w-5 h-5 mr-2" />
-              Profile
-            </Button>
+            <Link href="/login">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
+              >
+                <User className="w-5 h-5 mr-2" />
+                Profile
+              </Button>
+            </Link>
 
             <div className="flex gap-2">
               <Button
