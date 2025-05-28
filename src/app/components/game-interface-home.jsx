@@ -10,7 +10,7 @@ import Link from "next/link"
 const buildingTypes = [
   {
     name: "Town Hall",
-    image: "https://cdn.pixabay.com/photo/2021/04/18/12/09/building-6187584_1280.png",
+    image: "/TOWN_HALL_BASE.png",
   },
   {
     name: "Barracks",
@@ -168,7 +168,7 @@ export default function HomeGameInterface() {
           {/* Main Game Area */}
           <div className="lg:col-span-8">
             <Card className="bg-slate-800/30 border-slate-700 backdrop-blur-sm">
-              <CardContent className="p-6">
+              <CardContent className="pt-6 pb-0 pr-0 pl-0">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-2">
                     BASE STRUCTURE
@@ -177,37 +177,68 @@ export default function HomeGameInterface() {
                 </div>
 
                 {/* Game Grid */}
-                <div className="grid grid-cols-10 gap-1 max-w-2xl mx-auto p-4 bg-slate-900/50 rounded-2xl border border-slate-600/30">
+                <div className="grid grid-cols-10 gap-1 p-4 bg-slate-900/50 rounded-2xl border border-slate-600/30">
                   {Array.from({ length: totalCells }, (_, i) => {
                     const row = Math.floor(i / gridSize);
                     const col = i % gridSize;
                     const building = buildingsData[row][col];
-                    
+                    const isTownHallCell = (row === 4 || row === 5) && (col === 4 || col === 5);
+                    const isTopLeftTownHall = row === 4 && col === 4;
+
+                    // Skip rendering other town hall cells except top-left
+                    if (isTownHallCell && !isTopLeftTownHall) {
+                      return null;
+                    }
+
                     return (
                       <div
                         key={i}
                         className={`
-                          aspect-square border border-slate-600/50 rounded-lg cursor-pointer transition-all duration-200 relative
-                          ${selectedCell === i
-                            ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25"
-                            : hoveredCell === i
-                              ? "bg-slate-700/50 border-slate-500"
-                              : "bg-slate-800/30 hover:bg-slate-700/50"
+                          aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
+                          ${
+                            isTopLeftTownHall 
+                              ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
+                              : selectedCell === i
+                                ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
+                                : hoveredCell === i
+                                  ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                                  : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
-                        // onClick={() => setSelectedCell(selectedCell === i ? null : i)}
+                        style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
+                        // onClick={() => !isTownHallCell && setSelectedCell(selectedCell === i ? null : i)}
                         onMouseEnter={() => setHoveredCell(i)}
                         onMouseLeave={() => setHoveredCell(null)}
                       >
-                        {building && (
-                          <img src={building.image} alt={building.name} className="w-full h-full object-cover rounded-lg" />
-                        )}
-                        
-                        {hoveredCell === i && building && (
-                          <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
-                            <div className="text-sm font-bold">{building.name}</div>
-                            <div className="text-xs text-slate-300">Level {building.level}</div>
+                        {isTopLeftTownHall ? (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center">
+                              <img 
+                                src="/TOWN_HALL_BASE.png" 
+                                alt="Town Hall" 
+                                className="w-full h-full object-contain p-2"
+                              />
+                              {hoveredCell === i && (
+                                <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
+                                  <div className="text-sm font-bold">Town Hall</div>
+                                  <div className="text-xs text-slate-300">Level 1</div>
+                                </div>
+                              )}
+                            </div>
                           </div>
+                        ) : (
+                          <>
+                            {building && (
+                              <img src={building.image} alt={building.name} className="w-full h-full object-cover rounded-lg" />
+                            )}
+                            
+                            {hoveredCell === i && building && (
+                              <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
+                                <div className="text-sm font-bold">{building.name}</div>
+                                <div className="text-xs text-slate-300">Level {building.level}</div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     );
