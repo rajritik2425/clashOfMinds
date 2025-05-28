@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
+import Link from "next/link"
+import BattleLogsModal from './BattleLogsModal'
+
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
@@ -51,6 +54,8 @@ export default function HomeGameInterface() {
       console.error('Error fetching base data:', error);
     }
   };
+  const [showModal, setShowModal] = useState(false);
+
 
   useEffect(() => {
 
@@ -113,13 +118,15 @@ export default function HomeGameInterface() {
         <div className="flex justify-between items-center mb-6">
           {/* Left Side */}
           <div className="flex items-center gap-4">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
-            >
-              <User className="w-5 h-5 mr-2" />
-              Profile
-            </Button>
+            <Link href="/login">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
+              >
+                <User className="w-5 h-5 mr-2" />
+                Profile
+              </Button>
+            </Link>
 
             <div className="flex gap-2">
               <Button
@@ -183,10 +190,14 @@ export default function HomeGameInterface() {
                     <span className="text-slate-300">Losses</span>
                     <span className="text-red-400 font-bold">23</span>
                   </div>
+                  <span onClick={() => { setShowModal(true) }} className="text-sm cursor-pointer underline text-blue-200">📜 View Battle Logs</span>
                 </div>
               </CardContent>
             </Card>
           </div>
+          <BattleLogsModal showModal={showModal} setShowModal={setShowModal} />
+
+
 
           {/* Main Game Area */}
           <div className="lg:col-span-8">
