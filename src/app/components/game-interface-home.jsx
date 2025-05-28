@@ -3,24 +3,12 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import {
-  User,
-  Trophy,
-  Sword,
-  Coins,
-  Zap,
-  HelpCircle,
-  ShoppingCart,
-  Settings,
-  Shield,
-  Play,
-  Dumbbell,
-} from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Badge } from "./ui/badge"
-import TrainBattleModal from "../components/TrainBattleModal"
+import TrainBattleModal from '../components/TrainBattleModal'
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
@@ -28,6 +16,9 @@ export default function HomeGameInterface() {
   const [trophies, setTrophies] = useState(0)
   const hoverTimeoutRef = useRef(null)
   const isHoveringPopupRef = useRef(false)
+  const [buildingsData, setBuildingsData] = useState([])
+  const [challengeCounts, setChallengeCounts] = useState({})
+  const [showTrainModal, setShowTrainModal] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
   const [gold, setGold] = useState(0)
   const [elixir, setElixir] = useState(0)
@@ -35,8 +26,7 @@ export default function HomeGameInterface() {
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
-  const [buildingsData, setBuildingsData] = useState([])
-  const [challengeCounts, setChallengeCounts] = useState({})
+  
 
   const shopItems = [
     {
