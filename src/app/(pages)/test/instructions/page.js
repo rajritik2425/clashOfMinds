@@ -4,8 +4,15 @@ import { Button } from "../../../components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
 import { GamepadIcon, BookOpen, Home } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuth } from "../../../utils/AuthContext"
 
 export default function TestInstructionsPage() {
+  const router = useRouter();
+  const {isAuthenticated} = useAuth();
+  if(!isAuthenticated){
+    router.push('/login');
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a001f] via-[#1c0049] to-[#0a001f] flex items-center justify-center p-6 font-[Orbitron] relative overflow-hidden">
       

@@ -1,39 +1,54 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import notesData from './notesData.json';
-import { Button } from '../../components/ui/button';
+"use client"
 
-const NotesPage = () => {
-  const [data, setData] = useState(notesData);
-  const [selectedNote, setSelectedNote] = useState(null);
-  const [completionEnabled, setCompletionEnabled] = useState(false);
-  const [timer, setTimer] = useState(180); // 3 minutes
+import { useState, useEffect } from "react"
+import { Button } from "../../components/ui/button"
+import { useAuth } from "../../utils/AuthContext"
+import { useRouter } from "next/navigation"
+import notesData from "./notesData.json"
+
+export default function NotesPage() {
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const [data, setData] = useState(notesData)
+  const [selectedNote, setSelectedNote] = useState(null)
+  const [completionEnabled, setCompletionEnabled] = useState(false)
+  const [timer, setTimer] = useState(180) // 3 minutes
 
   useEffect(() => {
-    let interval;
+    if (!isAuthenticated) {
+      router.push('/login')
+      return
+    }
+    setData(notesData)
+  }, [isAuthenticated, router])
+
+  useEffect(() => {
+    let interval
     if (selectedNote) {
-      setCompletionEnabled(false);
-      setTimer(10);
+      setCompletionEnabled(false)
+      setTimer(10)
       interval = setInterval(() => {
         setTimer((prev) => {
           if (prev === 1) {
-            clearInterval(interval);
-            setCompletionEnabled(true);
+            clearInterval(interval)
+            setCompletionEnabled(true)
           }
-          return prev - 1;
-        });
-      }, 1000);
+          return prev - 1
+        })
+      }, 1000)
     }
-    return () => clearInterval(interval);
-  }, [selectedNote]);
+    return () => clearInterval(interval)
+  }, [selectedNote])
 
   const handleMarkCompleted = () => {
     const updatedData = data.map(item =>
       item.id === selectedNote.id ? { ...item, status: "Completed" } : item
-    );
-    setData(updatedData);
-    setSelectedNote(null);
-  };
+    )
+    setData(updatedData)
+    setSelectedNote(null)
+  }
+
+  if (!isAuthenticated) router.push('/login')
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-gray-900 to-black text-white font-semibold">
@@ -85,7 +100,5 @@ const NotesPage = () => {
         </div>
       )}
     </div>
-  );
-};
-
-export default NotesPage;
+  )
+}
