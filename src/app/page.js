@@ -1,9 +1,9 @@
-import Image from "next/image";
+import HomeGameInterface from "./components/game-interface-home";
 
 export default function Home() {
   return (
     <>
-    Home Page
+      <HomeGameInterface />
     </>
   );
 }
