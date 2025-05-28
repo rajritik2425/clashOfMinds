@@ -1,0 +1,35 @@
+[
+    {
+      "id": 1,
+      "question": "What is the acceleration of a body moving in a circle at constant speed?",
+      "source": "Mock Test",
+      "isCorrect": false,
+      "topic": "Circular Motion",
+      "explanation": "Even if speed is constant, direction changes, so it's accelerating towards the center."
+    },
+    {
+      "id": 2,
+      "question": "What is Newton's Second Law?",
+      "source": "Training Troops",
+      "isCorrect": true,
+      "topic": "Laws of Motion",
+      "explanation": "F = ma defines the relation between force, mass, and acceleration."
+    },
+    {
+      "id": 3,
+      "question": "What is the range of a projectile launched at 45 degrees?",
+      "source": "DPP",
+      "isCorrect": false,
+      "topic": "Projectile Motion",
+      "explanation": "The range is maximized at 45°: R = (u² sin(2θ)) / g."
+    },
+    {
+      "id": 4,
+      "question": "What is the unit of power?",
+      "source": "Mock Test",
+      "isCorrect": false,
+      "topic": "Work, Energy & Power",
+      "explanation": "Power is the rate of doing work, and its SI unit is Watt (W)."
+    }
+  ]
+  
