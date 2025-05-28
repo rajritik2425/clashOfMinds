@@ -18,9 +18,11 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "../../utils/AuthContext"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -53,11 +55,12 @@ export default function LoginPage() {
         throw new Error(data.message || `Login failed: ${response.status}`);
       }
 
-      // Store the token
-      localStorage.setItem("token", data.token)
-
+      // Use the login function from AuthContext
+      await login(data.user, data.token);
+      
       // Redirect to home page
-      router.push("/")
+      window.location.href = '/';
+
     } catch (error) {
       console.error("Login error:", error)
       setError(error.message || "Failed to login. Please try again.")
