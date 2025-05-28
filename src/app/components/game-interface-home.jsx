@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { Badge } from "./ui/badge"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
 import Link from "next/link"
-import Modal from './ui/modal'
 import BattleLogsModal from './BattleLogsModal'
+
 
 const buildingTypes = [
   {
@@ -28,35 +27,23 @@ const buildingTypes = [
   },
 ]
 
-// Dummy buildings data
-const buildingsData = Array(10).fill(null).map(() =>
-  Array(10).fill(null).map(() => {
-    // Randomly decide if this cell should have a building (30% chance)
-    if (Math.random() < 0.3) {
-      const buildingTypes = [
-        { name: "Town Hall", image: "/TOWN_HALL.jpg", level: Math.floor(Math.random() * 5) + 1 },
-        { name: "Barracks", image: "/BARRACKS.jpg", level: Math.floor(Math.random() * 5) + 1 },
-        { name: "Gold Mine", image: "/GOLD_MINE.jpg", level: Math.floor(Math.random() * 5) + 1 },
-        { name: "Elixir Collector", image: "/ELIXIR_COLLECTOR.jpg", level: Math.floor(Math.random() * 5) + 1 }
-      ];
-      return buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
-    }
-    return null;
-  })
-);
-
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
-  const [hoveredCell, setHoveredCell] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [hoveredCell, setHoveredCell] = useState(null)
+  const [trophies, setTrophies] = useState(0)
+  const [hoverTimeout, setHoverTimeout] = useState(null)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
   const [buildingsData, setBuildingsData] = useState([])
+  const [showModal, setShowModal] = useState(false);
+
 
   useEffect(() => {
-    const tempGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null))
+    const tempGrid = Array(gridSize)
+      .fill(null)
+      .map(() => Array(gridSize).fill(null))
 
     // Generate 10 unique random positions
     const positions = new Set()
@@ -67,8 +54,8 @@ export default function HomeGameInterface() {
     }
 
     // Place buildings at those positions
-    positions.forEach(pos => {
-      const [row, col] = pos.split(',').map(Number)
+    positions.forEach((pos) => {
+      const [row, col] = pos.split(",").map(Number)
       const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)]
       tempGrid[row][col] = {
         ...type,
@@ -78,6 +65,14 @@ export default function HomeGameInterface() {
 
     setBuildingsData(tempGrid)
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout)
+      }
+    }
+  }, [hoverTimeout])
 
   if (buildingsData.length === 0) return null
 
@@ -132,8 +127,11 @@ export default function HomeGameInterface() {
                   variant="outline"
                   className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold"
                 >
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Trophies
+                  <div className="flex gap-2 items-center">
+                    <Trophy className="w-4 h-4" />
+                    <span>Trophies</span>
+                    <span className="text-amber-400 font-bold">{trophies}</span>
+                  </div>
                 </Button>
               </CardContent>
             </Card>
@@ -170,6 +168,8 @@ export default function HomeGameInterface() {
           </div>
           <BattleLogsModal showModal={showModal} setShowModal={setShowModal} />
 
+
+
           {/* Main Game Area */}
           <div className="lg:col-span-8">
             <Card className="bg-slate-800/30 border-slate-700 backdrop-blur-sm">
@@ -184,9 +184,9 @@ export default function HomeGameInterface() {
                 {/* Game Grid */}
                 <div className="grid grid-cols-10 gap-1 max-w-2xl mx-auto p-4 bg-slate-900/50 rounded-2xl border border-slate-600/30">
                   {Array.from({ length: totalCells }, (_, i) => {
-                    const row = Math.floor(i / gridSize);
-                    const col = i % gridSize;
-                    const building = buildingsData[row][col];
+                    const row = Math.floor(i / gridSize)
+                    const col = i % gridSize
+                    const building = buildingsData[row][col]
 
                     return (
                       <div
@@ -201,21 +201,95 @@ export default function HomeGameInterface() {
                           }
                         `}
                         // onClick={() => setSelectedCell(selectedCell === i ? null : i)}
-                        onMouseEnter={() => setHoveredCell(i)}
-                        onMouseLeave={() => setHoveredCell(null)}
+                        onMouseEnter={() => {
+                          if (hoverTimeout) {
+                            clearTimeout(hoverTimeout)
+                            setHoverTimeout(null)
+                          }
+                          setHoveredCell(i)
+                        }}
+                        onMouseLeave={() => {
+                          const timeout = setTimeout(() => {
+                            setHoveredCell(null)
+                          }, 300) // 300ms delay
+                          setHoverTimeout(timeout)
+                        }}
                       >
                         {building && (
-                          <img src={building.image} alt={building.name} className="w-full h-full object-cover rounded-lg" />
+                          <img
+                            src={building.image || "/placeholder.svg"}
+                            alt={building.name}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
                         )}
 
                         {hoveredCell === i && building && (
-                          <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
-                            <div className="text-sm font-bold">{building.name}</div>
-                            <div className="text-xs text-slate-300">Level {building.level}</div>
+                          <div
+                            className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
+                            onMouseEnter={() => {
+                              if (hoverTimeout) {
+                                clearTimeout(hoverTimeout)
+                                setHoverTimeout(null)
+                              }
+                            }}
+                            onMouseLeave={() => {
+                              const timeout = setTimeout(() => {
+                                setHoveredCell(null)
+                              }, 100) // Shorter delay when leaving popup
+                              setHoverTimeout(timeout)
+                            }}
+                          >
+                            <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
+                              {/* Building Image */}
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
+                                  <img
+                                    src={building.image || "/placeholder.svg"}
+                                    alt={building.name}
+                                    className="w-full h-full object-cover rounded-md"
+                                  />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-bold text-white">{building.name}</div>
+                                  <div className="text-xs text-slate-300">Level {building.level}</div>
+                                </div>
+                              </div>
+
+                              {/* Stats */}
+                              <div className="space-y-2 mb-4">
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-400">Health</span>
+                                  <span className="text-green-400 font-medium">100%</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-400">Production</span>
+                                  <span className="text-yellow-400 font-medium">+50/hr</span>
+                                </div>
+                              </div>
+
+                              {/* Accept Challenge Button */}
+                              <Button
+                                size="sm"
+                                className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  // Handle challenge acceptance logic here
+                                  console.log(`Challenge accepted for ${building.name} at level ${building.level}`)
+                                }}
+                              >
+                                <Shield className="w-3 h-3 mr-1" />
+                                Accept Challenge
+                              </Button>
+
+                              {/* Arrow pointing down */}
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95"></div>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
-                    );
+                    )
                   })}
                 </div>
 
@@ -331,4 +405,3 @@ export default function HomeGameInterface() {
     </div>
   )
 }
-
