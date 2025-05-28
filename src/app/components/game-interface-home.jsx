@@ -20,6 +20,8 @@ export default function HomeGameInterface() {
   const [challengeCounts, setChallengeCounts] = useState({})
   const [showTrainModal, setShowTrainModal] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
+  const [gold, setGold] = useState(0)
+  const [elixir, setElixir] = useState(0)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
@@ -143,10 +145,35 @@ export default function HomeGameInterface() {
       console.error("Error fetching base data:", error)
     }
   }
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("/api/user/me", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM",
+        },
+      })
+
+      if (response.ok) {
+        const userData = await response.json()
+        setGold(userData.gold || 0)
+        setElixir(userData.elixir || 0)
+        setTrophies(userData.trophies || 0)
+      } else {
+        console.error("Failed to fetch user data:", response.statusText)
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+    }
+  }
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     fetchBaseData()
+    fetchUserData()
   }, [])
 
   useEffect(() => {
@@ -278,7 +305,6 @@ export default function HomeGameInterface() {
             </Card>
             <TrainBattleModal showModal={showTrainModal} setShowModal={setShowTrainModal} />
 
-
             {/* Battle Stats */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-2">
@@ -336,13 +362,14 @@ export default function HomeGameInterface() {
                         key={i}
                         className={`
                           aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
-                          ${isTopLeftTownHall
-                            ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
-                            : selectedCell === i
-                              ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
-                              : hoveredCell === i
-                                ? "bg-slate-700/50 border-slate-500 cursor-pointer"
-                                : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
+                          ${
+                            isTopLeftTownHall
+                              ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
+                              : selectedCell === i
+                                ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
+                                : hoveredCell === i
+                                  ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                                  : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
                         style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
@@ -488,10 +515,13 @@ export default function HomeGameInterface() {
                         <Coins className="w-4 h-4 text-yellow-400" />
                         <span className="text-sm text-slate-300">Gold</span>
                       </div>
-                      <span className="text-yellow-400 font-bold">100 / 1000</span>
+                      <span className="text-yellow-400 font-bold">{gold} / 1000</span>
                     </div>
                     <div className="w-full h-2 bg-slate-700 rounded-full">
-                      <div className="h-full bg-yellow-400 rounded-full" style={{ width: "10%" }} />
+                      <div
+                        className="h-full bg-yellow-400 rounded-full"
+                        style={{ width: `${Math.min((gold / 1000) * 100, 100)}%` }}
+                      />
                     </div>
                   </div>
 
@@ -502,10 +532,13 @@ export default function HomeGameInterface() {
                         <Zap className="w-4 h-4 text-purple-400" />
                         <span className="text-sm text-slate-300">Elixir</span>
                       </div>
-                      <span className="text-purple-400 font-bold">100 / 1000</span>
+                      <span className="text-purple-400 font-bold">{elixir} / 1000</span>
                     </div>
                     <div className="w-full h-2 bg-slate-700 rounded-full">
-                      <div className="h-full bg-purple-400 rounded-full" style={{ width: "10%" }} />
+                      <div
+                        className="h-full bg-purple-400 rounded-full"
+                        style={{ width: `${Math.min((elixir / 1000) * 100, 100)}%` }}
+                      />
                     </div>
                   </div>
 
@@ -590,8 +623,9 @@ export default function HomeGameInterface() {
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${item.purchased ? "border-green-500/50 bg-green-900/20" : ""
-                    }`}
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
+                    item.purchased ? "border-green-500/50 bg-green-900/20" : ""
+                  }`}
                 >
                   {item.discount && (
                     <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold">
