@@ -1,73 +1,102 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
-
-const buildingTypes = [
-  {
-    name: "Town Hall",
-    image: "https://cdn.pixabay.com/photo/2021/04/18/12/09/building-6187584_1280.png",
-  },
-  {
-    name: "Barracks",
-    image: "https://cdn-icons-png.flaticon.com/512/1183/1183621.png",
-  },
-  {
-    name: "Gold Mine",
-    image: "https://cdn-icons-png.flaticon.com/512/2753/2753924.png",
-  },
-  {
-    name: "Elixir Collector",
-    image: "https://cdn-icons-png.flaticon.com/512/1486/1486486.png",
-  },
-]
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
   const [hoveredCell, setHoveredCell] = useState(null)
   const [trophies, setTrophies] = useState(0)
-  const [hoverTimeout, setHoverTimeout] = useState(null)
+  const hoverTimeoutRef = useRef(null)
+  const isHoveringPopupRef = useRef(false)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
   const [buildingsData, setBuildingsData] = useState([])
+  const [challengeCounts, setChallengeCounts] = useState({})
+
+  const fetchBaseData = async () => {
+    try {
+      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7', {
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
+        }
+      });
+
+      const data = await response.json();
+
+      // Initialize empty grid
+      const tempGrid = Array(gridSize)
+        .fill(null)
+        .map(() => Array(gridSize).fill(null));
+
+      // Place buildings at their correct positions
+      data.base.forEach(building => {
+        const [row, col] = building.index;
+        tempGrid[row][col] = {
+          name: building.name, // You might want to map this to a proper name
+          image: building.imageURL,
+          level: building.level,
+          health: building.health,
+          assetId: building.assetId,
+          _id: building._id
+        };
+      });
+
+      setBuildingsData(tempGrid);
+    } catch (error) {
+      console.error('Error fetching base data:', error);
+    }
+  };
 
   useEffect(() => {
-    const tempGrid = Array(gridSize)
-      .fill(null)
-      .map(() => Array(gridSize).fill(null))
 
-    // Generate 10 unique random positions
-    const positions = new Set()
-    while (positions.size < 10) {
-      const row = Math.floor(Math.random() * gridSize)
-      const col = Math.floor(Math.random() * gridSize)
-      positions.add(`${row},${col}`)
-    }
-
-    // Place buildings at those positions
-    positions.forEach((pos) => {
-      const [row, col] = pos.split(",").map(Number)
-      const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)]
-      tempGrid[row][col] = {
-        ...type,
-        level: Math.floor(Math.random() * 5) + 1,
-      }
-    })
-
-    setBuildingsData(tempGrid)
-  }, [])
+    fetchBaseData();
+  }, []);
 
   useEffect(() => {
     return () => {
-      if (hoverTimeout) {
-        clearTimeout(hoverTimeout)
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
       }
     }
-  }, [hoverTimeout])
+  }, [])
+
+  const clearHoverTimeout = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+  }
+
+  const handleCellMouseEnter = (cellIndex) => {
+    clearHoverTimeout()
+    setHoveredCell(cellIndex)
+  }
+
+  const handleCellMouseLeave = () => {
+    // Only start the timeout if we're not hovering over the popup
+    if (!isHoveringPopupRef.current) {
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredCell(null)
+      }, 500) // Increased delay for better UX
+    }
+  }
+
+  const handlePopupMouseEnter = () => {
+    clearHoverTimeout()
+    isHoveringPopupRef.current = true
+  }
+
+  const handlePopupMouseLeave = () => {
+    isHoveringPopupRef.current = false
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredCell(null)
+    }, 200) // Shorter delay when leaving popup
+  }
 
   if (buildingsData.length === 0) return null
 
@@ -189,24 +218,12 @@ export default function HomeGameInterface() {
                               : "bg-slate-800/30 hover:bg-slate-700/50"
                           }
                         `}
-                        // onClick={() => setSelectedCell(selectedCell === i ? null : i)}
-                        onMouseEnter={() => {
-                          if (hoverTimeout) {
-                            clearTimeout(hoverTimeout)
-                            setHoverTimeout(null)
-                          }
-                          setHoveredCell(i)
-                        }}
-                        onMouseLeave={() => {
-                          const timeout = setTimeout(() => {
-                            setHoveredCell(null)
-                          }, 300) // 300ms delay
-                          setHoverTimeout(timeout)
-                        }}
+                        onMouseEnter={() => handleCellMouseEnter(i)}
+                        onMouseLeave={handleCellMouseLeave}
                       >
                         {building && (
                           <img
-                            src={building.image || "/placeholder.svg"}
+                            src={building.image}
                             alt={building.name}
                             className="w-full h-full object-cover rounded-lg"
                           />
@@ -215,25 +232,15 @@ export default function HomeGameInterface() {
                         {hoveredCell === i && building && (
                           <div
                             className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
-                            onMouseEnter={() => {
-                              if (hoverTimeout) {
-                                clearTimeout(hoverTimeout)
-                                setHoverTimeout(null)
-                              }
-                            }}
-                            onMouseLeave={() => {
-                              const timeout = setTimeout(() => {
-                                setHoveredCell(null)
-                              }, 100) // Shorter delay when leaving popup
-                              setHoverTimeout(timeout)
-                            }}
+                            onMouseEnter={handlePopupMouseEnter}
+                            onMouseLeave={handlePopupMouseLeave}
                           >
                             <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
                               {/* Building Image */}
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
                                   <img
-                                    src={building.image || "/placeholder.svg"}
+                                    src={building.image}
                                     alt={building.name}
                                     className="w-full h-full object-cover rounded-md"
                                   />
@@ -248,11 +255,13 @@ export default function HomeGameInterface() {
                               <div className="space-y-2 mb-4">
                                 <div className="flex justify-between text-xs">
                                   <span className="text-slate-400">Health</span>
-                                  <span className="text-green-400 font-medium">100%</span>
+                                  <span className="text-green-400 font-medium">{building.health}%</span>
                                 </div>
                                 <div className="flex justify-between text-xs">
-                                  <span className="text-slate-400">Production</span>
-                                  <span className="text-yellow-400 font-medium">+50/hr</span>
+                                  <span className="text-slate-400">Upgrade Level</span>
+                                  <span className="text-yellow-400 font-medium">
+                                    {challengeCounts[building.assetId] || 0}/10
+                                  </span>
                                 </div>
                               </div>
 
@@ -262,8 +271,27 @@ export default function HomeGameInterface() {
                                 className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  // Handle challenge acceptance logic here
-                                  console.log(`Challenge accepted for ${building.name} at level ${building.level}`)
+                                  const assetId = building.assetId
+                                  setChallengeCounts((prev) => {
+                                    const currentCount = prev[assetId] || 0
+                                    const newCount = currentCount + 1
+
+                                    // Reset to 0 if count reaches 10
+                                    if (newCount >= 10) {
+                                      return {
+                                        ...prev,
+                                        [assetId]: 0,
+                                      }
+                                    }
+
+                                    return {
+                                      ...prev,
+                                      [assetId]: newCount,
+                                    }
+                                  })
+                                  console.log(
+                                    `Challenge accepted for ${building.name} at level ${building.level}. Count: ${(challengeCounts[building.assetId] || 0) + 1}`,
+                                  )
                                 }}
                               >
                                 <Shield className="w-3 h-3 mr-1" />
@@ -281,8 +309,6 @@ export default function HomeGameInterface() {
                     )
                   })}
                 </div>
-
-                {/* <div className="text-center mt-4 text-sm text-slate-400">Click on grid cells to place structures</div> */}
               </CardContent>
             </Card>
           </div>
