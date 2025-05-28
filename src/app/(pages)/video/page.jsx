@@ -192,7 +192,7 @@ export default function WatchPage() {
         {/* Header with stats */}
         <header className="mb-10 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text   tracking-wide font-orbitron">
-          ⚔️Videos Arena
+          Videos Arena
           </h1>
           <p className="text-gray-300 max-w-2xl mx-auto mb-6">
             Level up your skills with curated tutorials. Track your progress like a pro gamer!
