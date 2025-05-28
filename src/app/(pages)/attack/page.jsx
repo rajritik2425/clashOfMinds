@@ -21,108 +21,110 @@ import {
   Skull,
 } from "lucide-react"
 
-const TROOPS = [
-  {
-    id: "barbarian",
-    name: "Barbarian",
-    icon: Sword,
-    damage: 25,
-    health: 100,
-    count: 10,
-    cost: 5,
-    color: "from-red-600 to-red-800",
-  },
-  {
-    id: "archer",
-    name: "Archer",
-    icon: Target,
-    damage: 15,
-    health: 60,
-    count: 15,
-    cost: 3,
-    color: "from-green-600 to-green-800",
-  },
-  {
-    id: "wizard",
-    name: "Wizard",
-    icon: Zap,
-    damage: 40,
-    health: 80,
-    count: 5,
-    cost: 10,
-    color: "from-purple-600 to-purple-800",
-  },
-  {
-    id: "giant",
-    name: "Giant",
-    icon: Shield,
-    damage: 50,
-    health: 300,
-    count: 3,
-    cost: 25,
-    color: "from-blue-600 to-blue-800",
-  },
-]
-
-const createRandomBase = () => {
-  const base = Array(80).fill(null)
-
-  // Place main castle at center (4 grids)
-  const centerPositions = [34, 35, 44, 45]
-  centerPositions.forEach((pos) => {
-    base[pos] = {
-      id: `castle-${pos}`,
-      name: "Main Castle",
-      icon: Castle,
-      color: "from-purple-600 to-purple-800",
-      health: 500,
-      maxHealth: 500,
-      isDestroyed: false,
-      isMainCastle: true,
-    }
-  })
-
-  // Add random structures
-  const structures = [
-    { name: "Guard Tower", icon: Shield, color: "from-blue-600 to-blue-800", health: 200 },
-    { name: "Cannon", icon: Zap, color: "from-yellow-600 to-orange-600", health: 150 },
-    { name: "Gold Mine", icon: Coins, color: "from-yellow-500 to-yellow-700", health: 100 },
-    { name: "Barracks", icon: Sword, color: "from-red-600 to-red-800", health: 180 },
-    { name: "House", icon: Home, color: "from-green-600 to-green-800", health: 120 },
-  ]
-
-  // Place 15-20 random structures
-  const numStructures = Math.floor(Math.random() * 6) + 15
-  for (let i = 0; i < numStructures; i++) {
-    let pos
-    do {
-      pos = Math.floor(Math.random() * 80)
-    } while (base[pos] !== null)
-
-    const structure = structures[Math.floor(Math.random() * structures.length)]
-    base[pos] = {
-      id: `structure-${pos}`,
-      name: structure.name,
-      icon: structure.icon,
-      color: structure.color,
-      health: structure.health,
-      maxHealth: structure.health,
-      isDestroyed: false,
-    }
-  }
-
-  return base
-}
-
-const DUMMY_OPPONENTS = [
-  { id: "1", name: "DragonSlayer", level: 12, trophies: 1250, gold: 50000, elixir: 25000, base: createRandomBase() },
-  { id: "2", name: "WarChief", level: 15, trophies: 1800, gold: 75000, elixir: 40000, base: createRandomBase() },
-  { id: "3", name: "StormKing", level: 10, trophies: 980, gold: 35000, elixir: 18000, base: createRandomBase() },
-  { id: "4", name: "IronFist", level: 18, trophies: 2200, gold: 120000, elixir: 60000, base: createRandomBase() },
-  { id: "5", name: "ShadowBlade", level: 8, trophies: 750, gold: 25000, elixir: 12000, base: createRandomBase() },
-]
+const API_BASE_URL = "https://clash-of-minds.onrender.com/api"
 
 export default function AttackPage() {
+  const TROOPS = [
+    {
+      id: "barbarian", 
+      name: "Barbarian",
+      icon: Sword,
+      damage: 25,
+      health: 100,
+      count: 10,
+      cost: 5,
+      color: "from-red-600 to-red-800",
+    },
+    {
+      id: "archer",
+      name: "Archer",
+      icon: Target,
+      damage: 15,
+      health: 60,
+      count: 15,
+      cost: 3,
+      color: "from-green-600 to-green-800",
+    },
+    {
+      id: "wizard",
+      name: "Wizard",
+      icon: Zap,
+      damage: 40,
+      health: 80,
+      count: 5,
+      cost: 10,
+      color: "from-purple-600 to-purple-800",
+    },
+    {
+      id: "giant",
+      name: "Giant",
+      icon: Shield,
+      damage: 50,
+      health: 300,
+      count: 3,
+      cost: 25,
+      color: "from-blue-600 to-blue-800",
+    },
+  ]
+
+  const createRandomBase = () => {
+    const base = Array(80).fill(null)
+
+    // Place main castle at center (4 grids)
+    const centerPositions = [34, 35, 44, 45]
+    centerPositions.forEach((pos) => {
+      base[pos] = {
+        id: `castle-${pos}`,
+        name: "Main Castle",
+        icon: Castle,
+        color: "from-purple-600 to-purple-800",
+        health: 500,
+        maxHealth: 500,
+        isDestroyed: false,
+        isMainCastle: true,
+      }
+    })
+
+    // Add random structures
+    const structures = [
+      { name: "Guard Tower", icon: Shield, color: "from-blue-600 to-blue-800", health: 200 },
+      { name: "Cannon", icon: Zap, color: "from-yellow-600 to-orange-600", health: 150 },
+      { name: "Gold Mine", icon: Coins, color: "from-yellow-500 to-yellow-700", health: 100 },
+      { name: "Barracks", icon: Sword, color: "from-red-600 to-red-800", health: 180 },
+      { name: "House", icon: Home, color: "from-green-600 to-green-800", health: 120 },
+    ]
+
+    // Place 15-20 random structures
+    const numStructures = Math.floor(Math.random() * 6) + 15
+    for (let i = 0; i < numStructures; i++) {
+      let pos
+      do {
+        pos = Math.floor(Math.random() * 80)
+      } while (base[pos] !== null)
+
+      const structure = structures[Math.floor(Math.random() * structures.length)]
+      base[pos] = {
+        id: `structure-${pos}`,
+        name: structure.name,
+        icon: structure.icon,
+        color: structure.color,
+        health: structure.health,
+        maxHealth: structure.health,
+        isDestroyed: false,
+      }
+    }
+
+    return base
+  }
+
+  const DUMMY_OPPONENTS = [
+    { id: "1", name: "DragonSlayer", level: 12, trophies: 1250, gold: 50000, elixir: 25000, base: createRandomBase() },
+    { id: "2", name: "WarChief", level: 15, trophies: 1800, gold: 75000, elixir: 40000, base: createRandomBase() },
+    { id: "3", name: "StormKing", level: 10, trophies: 980, gold: 35000, elixir: 18000, base: createRandomBase() },
+    { id: "4", name: "IronFist", level: 18, trophies: 2200, gold: 120000, elixir: 60000, base: createRandomBase() },
+    { id: "5", name: "ShadowBlade", level: 8, trophies: 750, gold: 25000, elixir: 12000, base: createRandomBase() },
+  ]
+
   const [gameState, setGameState] = useState("searching")
   const [currentOpponent, setCurrentOpponent] = useState(null)
   const [battleBase, setBattleBase] = useState([])
@@ -132,6 +134,7 @@ export default function AttackPage() {
   const [battleTime, setBattleTime] = useState(120) // 3 minutes
   const [isAttacking, setIsAttacking] = useState(false)
   const [playerGold, setPlayerGold] = useState(100000)
+  const [playerTrophies, setPlayerTrophies] = useState(0)
   const battleInterval = useRef()
 
   const [attackingCell, setAttackingCell] = useState(null)
@@ -177,20 +180,186 @@ export default function AttackPage() {
     return accessibleSides >= 2
   }
 
-  const searchOpponent = () => {
+  // Fetch current user data
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        window.location.href = "/login"
+        return null
+      }
+
+      const response = await fetch(`${API_BASE_URL}/users/me`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("token")
+          window.location.href = "/login"
+          return null
+        }
+        throw new Error("Failed to fetch user data")
+      }
+      
+      const userData = await response.json()
+      setPlayerTrophies(userData.trophies || 0)
+      setPlayerGold(userData.gold || 100000)
+      return userData._id
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+      return null
+    }
+  }
+
+  // Fetch opponent base
+  const fetchOpponentBase = async (userId) => {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${API_BASE_URL}/resources/${userId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+      
+      if (!response.ok) throw new Error("Failed to fetch opponent base")
+      
+      const baseData = await response.json()
+      return baseData.base || []
+    } catch (error) {
+      console.error("Error fetching opponent base:", error)
+      return []
+    }
+  }
+
+  // Fetch opponent troops
+  const fetchOpponentTroops = async (userId) => {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${API_BASE_URL}/troops/${userId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+      
+      if (!response.ok) throw new Error("Failed to fetch opponent troops")
+      
+      return await response.json()
+    } catch (error) {
+      console.error("Error fetching opponent troops:", error)
+      return []
+    }
+  }
+
+  // Search for opponent
+  const searchOpponent = async () => {
     setGameState("searching")
-    // Reset troops to full count for new battle
     setDeployedTroops(TROOPS.map((t) => ({ ...t })))
     setSelectedTroop(null)
     setDestructionPercentage(0)
     setBattleTime(120)
 
-    setTimeout(() => {
-      const randomOpponent = DUMMY_OPPONENTS[Math.floor(Math.random() * DUMMY_OPPONENTS.length)]
-      setCurrentOpponent(randomOpponent)
-      setBattleBase([...randomOpponent.base])
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        window.location.href = "/login"
+        return
+      }
+
+      const response = await fetch(`${API_BASE_URL}/battles/find-opponent`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      })
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("token")
+          window.location.href = "/login"
+          return
+        }
+        throw new Error("Failed to find opponent")
+      }
+      
+      const opponentData = await response.json()
+      
+      // Format opponent data
+      const opponent = {
+        id: opponentData.userId,
+        name: opponentData.username,
+        level: opponentData.level || 1,
+        trophies: opponentData.trophies || 0,
+        gold: opponentData.resources?.gold || 50000,
+        elixir: opponentData.resources?.elixir || 25000,
+      }
+
+      // Convert base layout to grid format
+      const baseGrid = Array(80).fill(null)
+      opponentData.base.forEach(structure => {
+        const position = structure.position
+        if (position >= 0 && position < 80) {
+          baseGrid[position] = {
+            id: structure.id,
+            name: structure.type,
+            icon: getStructureIcon(structure.type),
+            color: getStructureColor(structure.type),
+            health: structure.health,
+            maxHealth: structure.maxHealth || structure.health,
+            isDestroyed: false,
+            isMainCastle: structure.type === "Study Hall"
+          }
+        }
+      })
+      
+      setCurrentOpponent(opponent)
+      setBattleBase(baseGrid)
       setGameState("preview")
-    }, 2000)
+    } catch (error) {
+      console.error("Error finding opponent:", error)
+      // Fallback to dummy opponent for development
+      if (process.env.NODE_ENV === "development") {
+        const dummyOpponent = {
+          id: "dummy-1",
+          name: "Test Opponent",
+          level: 10,
+          trophies: 1000,
+          gold: 50000,
+          elixir: 25000,
+        }
+        setCurrentOpponent(dummyOpponent)
+        setBattleBase(createRandomBase())
+        setGameState("preview")
+      } else {
+        // In production, show error and return to home
+        alert("Failed to find an opponent. Please try again later.")
+        window.location.href = "/"
+      }
+    }
+  }
+
+  // Helper to get structure icon
+  const getStructureIcon = (name) => {
+    if (name.includes("Study Hall")) return Castle
+    if (name.includes("Mine")) return Coins
+    if (name.includes("Tower")) return Shield
+    if (name.includes("Arena")) return Trophy
+    return Home
+  }
+
+  // Helper to get structure color
+  const getStructureColor = (name) => {
+    if (name.includes("Study Hall")) return "from-purple-600 to-purple-800"
+    if (name.includes("Mine")) return "from-yellow-500 to-yellow-700"
+    if (name.includes("Tower")) return "from-blue-600 to-blue-800"
+    if (name.includes("Arena")) return "from-green-600 to-green-800"
+    return "from-gray-600 to-gray-800"
   }
 
   const skipOpponent = () => {
@@ -218,12 +387,51 @@ export default function AttackPage() {
     }, 1000)
   }
 
-  const endBattle = () => {
+  const endBattle = async () => {
     if (battleInterval.current) {
       clearInterval(battleInterval.current)
     }
     setGameState("result")
     setIsAttacking(false)
+
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        window.location.href = "/login"
+        return
+      }
+
+      const battleResult = {
+        opponentId: currentOpponent.id,
+        destructionPercentage,
+        isVictory: destructionPercentage >= 50,
+        destroyedStructures: battleBase
+          .filter(structure => structure && structure.isDestroyed)
+          .map(structure => structure.id)
+      }
+
+      const response = await fetch(`${API_BASE_URL}/battles/end`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(battleResult)
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to submit battle results")
+      }
+
+      const result = await response.json()
+      
+      // Update player resources
+      setPlayerGold(prev => prev + (result.rewards?.gold || 0))
+      setPlayerTrophies(prev => prev + (result.rewards?.trophies || 0))
+    } catch (error) {
+      console.error("Error submitting battle results:", error)
+      // Continue showing results even if submission fails
+    }
   }
 
   const deployTroop = (cellIndex) => {
@@ -317,7 +525,15 @@ export default function AttackPage() {
   }
 
   useEffect(() => {
-    searchOpponent()
+    // Fetch current user on component mount
+    const fetchData = async () => {
+      const userId = await fetchCurrentUser()
+      if (userId) {
+        searchOpponent()
+      }
+    }
+    
+    fetchData()
 
     const interval = setInterval(() => {
       const now = Date.now()
