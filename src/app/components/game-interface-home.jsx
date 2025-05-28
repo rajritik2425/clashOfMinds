@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Badge } from "./ui/badge"
+import TrainBattleModal from '../components/TrainBattleModal'
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
@@ -15,13 +16,15 @@ export default function HomeGameInterface() {
   const [trophies, setTrophies] = useState(0)
   const hoverTimeoutRef = useRef(null)
   const isHoveringPopupRef = useRef(false)
+  const [buildingsData, setBuildingsData] = useState([])
+  const [challengeCounts, setChallengeCounts] = useState({})
+  const [showTrainModal, setShowTrainModal] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
-  const [buildingsData, setBuildingsData] = useState([])
-  const [challengeCounts, setChallengeCounts] = useState({})
+  
 
   const shopItems = [
     {
@@ -261,6 +264,21 @@ export default function HomeGameInterface() {
               </CardContent>
             </Card>
 
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <Button
+                  onClick={() => setShowTrainModal(true)}
+                  variant="outline"
+                  className="w-full bg-green-500 hover:from-yellow-600 hover:to-orange-600 text-white border-yellow-400/30 font-bold"
+                >
+                  <Dumbbell className="w-4 h-4 mr-2" />
+                  Train
+                </Button>
+              </CardContent>
+            </Card>
+            <TrainBattleModal showModal={showTrainModal} setShowModal={setShowTrainModal} />
+
+
             {/* Battle Stats */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-2">
@@ -318,14 +336,13 @@ export default function HomeGameInterface() {
                         key={i}
                         className={`
                           aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
-                          ${
-                            isTopLeftTownHall 
-                              ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
-                              : selectedCell === i
-                                ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
-                                : hoveredCell === i
-                                  ? "bg-slate-700/50 border-slate-500 cursor-pointer"
-                                  : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
+                          ${isTopLeftTownHall
+                            ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
+                            : selectedCell === i
+                              ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
+                              : hoveredCell === i
+                                ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                                : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
                         style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
@@ -335,9 +352,9 @@ export default function HomeGameInterface() {
                         {isTopLeftTownHall ? (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="text-center">
-                              <img 
-                                src="/TOWN_HALL_BASE.png" 
-                                alt="Town Hall" 
+                              <img
+                                src="/TOWN_HALL_BASE.png"
+                                alt="Town Hall"
                                 className="w-full h-full object-contain p-2"
                               />
                               {hoveredCell === i && (
