@@ -6,6 +6,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState('');
 
   // Function to fetch user data
   const fetchUserData = async (token) => {
@@ -36,6 +37,7 @@ export function AuthProvider({ children }) {
       const token = localStorage.getItem('token');
       if (token) {
         try {
+          setToken(token);
           const userData = await fetchUserData(token);
           setUser(userData);
           setIsAuthenticated(true);
@@ -94,7 +96,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, signup, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, signup, logout, token }}>
       {children}
     </AuthContext.Provider>
   );
