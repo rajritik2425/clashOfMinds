@@ -5,9 +5,10 @@ import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell } from "lucide-react"
 import Link from "next/link"
-import BattleLogsModal from './BattleLogsModal'
+import BattleLogsModal from "./BattleLogsModal"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Badge } from "./ui/badge"
 import TrainBattleModal from '../components/TrainBattleModal'
-
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
@@ -18,52 +19,135 @@ export default function HomeGameInterface() {
   const [buildingsData, setBuildingsData] = useState([])
   const [challengeCounts, setChallengeCounts] = useState({})
   const [showTrainModal, setShowTrainModal] = useState(false)
+  const [showShopModal, setShowShopModal] = useState(false)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
   
 
+  const shopItems = [
+    {
+      id: 1,
+      name: "JEE Advanced Batch",
+      description: "Complete preparation package for JEE Advanced",
+      price: 2999,
+      originalPrice: 4999,
+      currency: "rupees",
+      image: "/placeholder.svg?height=64&width=64",
+      category: "batch",
+      discount: 40,
+      purchased: true,
+      canUpgrade: true,
+      upgradePrice: 1999,
+      perks: [
+        "+50 Mock tests",
+        "+200 Daily practice problems",
+        "+30 Recorded lectures",
+        "+15 Live classes",
+        "+100 Flashcards & notes",
+      ],
+    },
+    {
+      id: 2,
+      name: "NEET Foundation Batch",
+      description: "Foundation course for NEET preparation",
+      price: 3999,
+      originalPrice: 5999,
+      currency: "rupees",
+      image: "/placeholder.svg?height=64&width=64",
+      category: "batch",
+      discount: 33,
+      purchased: false,
+      perks: [
+        "+75 Mock tests",
+        "+300 Daily practice problems",
+        "+45 Recorded lectures",
+        "+20 Live classes",
+        "+150 Flashcards & notes",
+        "+10 Analysis & strategy sessions",
+      ],
+    },
+    {
+      id: 3,
+      name: "Mathematics Test Series",
+      description: "Comprehensive test series for Mathematics",
+      price: 1499,
+      originalPrice: 2499,
+      currency: "rupees",
+      image: "/placeholder.svg?height=64&width=64",
+      category: "test-series",
+      discount: 40,
+      purchased: false,
+      perks: [
+        "+25 Mock tests",
+        "+100 Daily practice problems",
+        "+15 Recorded lectures",
+        "+5 Analysis & strategy sessions",
+      ],
+    },
+    {
+      id: 4,
+      name: "Physics Test Series",
+      description: "Advanced test series for Physics concepts",
+      price: 1299,
+      originalPrice: 1999,
+      currency: "rupees",
+      image: "/placeholder.svg?height=64&width=64",
+      category: "test-series",
+      discount: 35,
+      purchased: true,
+      canUpgrade: true,
+      upgradePrice: 999,
+      perks: [
+        "+30 Mock tests",
+        "+80 Daily practice problems",
+        "+12 Recorded lectures",
+        "+8 Live classes",
+        "+6 Analysis & strategy sessions",
+      ],
+    },
+  ]
+
   const fetchBaseData = async () => {
     try {
-      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7', {
+      const response = await fetch("/api/resources/6837169bebb783e2a26dc8c7", {
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
-        }
-      });
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM",
+        },
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       // Initialize empty grid
       const tempGrid = Array(gridSize)
         .fill(null)
-        .map(() => Array(gridSize).fill(null));
+        .map(() => Array(gridSize).fill(null))
 
       // Place buildings at their correct positions
-      data.base.forEach(building => {
-        const [row, col] = building.index;
+      data.base.forEach((building) => {
+        const [row, col] = building.index
         tempGrid[row][col] = {
           name: building.name, // You might want to map this to a proper name
           image: building.imageURL,
           level: building.level,
           health: building.health,
           assetId: building.assetId,
-          _id: building._id
-        };
-      });
+          _id: building._id,
+        }
+      })
 
-      setBuildingsData(tempGrid);
+      setBuildingsData(tempGrid)
     } catch (error) {
-      console.error('Error fetching base data:', error);
+      console.error("Error fetching base data:", error)
     }
-  };
-  const [showModal, setShowModal] = useState(false);
-
+  }
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-
-    fetchBaseData();
-  }, []);
+    fetchBaseData()
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -208,14 +292,19 @@ export default function HomeGameInterface() {
                     <span className="text-slate-300">Losses</span>
                     <span className="text-red-400 font-bold">23</span>
                   </div>
-                  <span onClick={() => { setShowModal(true) }} className="text-sm cursor-pointer underline text-blue-200">📜 View Battle Logs</span>
+                  <span
+                    onClick={() => {
+                      setShowModal(true)
+                    }}
+                    className="text-sm cursor-pointer underline text-blue-200"
+                  >
+                    📜 View Battle Logs
+                  </span>
                 </div>
               </CardContent>
             </Card>
           </div>
           <BattleLogsModal showModal={showModal} setShowModal={setShowModal} />
-
-
 
           {/* Main Game Area */}
           <div className="lg:col-span-8">
@@ -412,6 +501,7 @@ export default function HomeGameInterface() {
                 <Button
                   size="lg"
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-green-500/25 border border-green-400/30"
+                  onClick={() => setShowShopModal(true)}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Shop
@@ -457,6 +547,121 @@ export default function HomeGameInterface() {
             </Card>
           </div>
         </div>
+        {/* Shop Modal */}
+        <Dialog open={showShopModal} onOpenChange={setShowShopModal}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-800 border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
+                🛒 Game Shop
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2">
+              {shopItems.map((item) => (
+                <Card
+                  key={item.id}
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
+                    item.purchased ? "border-green-500/50 bg-green-900/20" : ""
+                  }`}
+                >
+                  {item.discount && (
+                    <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold">
+                      -{item.discount}% OFF
+                    </Badge>
+                  )}
+                  {item.purchased && (
+                    <Badge className="absolute -top-2 -left-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold">
+                      PURCHASED
+                    </Badge>
+                  )}
+
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-20 h-20 rounded-lg bg-slate-600/50 p-2 flex-shrink-0">
+                        <img
+                          src={item.image || "/placeholder.svg"}
+                          alt={item.name}
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-bold text-white text-lg">{item.name}</h3>
+                            <p className="text-sm text-slate-300 mt-1">{item.description}</p>
+                            <Badge variant="outline" className="text-xs border-slate-500 text-slate-300 mt-2">
+                              {item.category}
+                            </Badge>
+                          </div>
+
+                          <div className="text-right">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-slate-400 line-through">₹{item.originalPrice}</span>
+                              <span className="text-lg font-bold text-white">₹{item.price}</span>
+                            </div>
+                            {item.canUpgrade && (
+                              <div className="text-sm text-yellow-400 mt-1">Upgrade: ₹{item.upgradePrice}</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Perks Section */}
+                        <div className="mb-4">
+                          <h4 className="text-sm font-semibold text-slate-300 mb-2">What you get:</h4>
+                          <div className="grid grid-cols-2 gap-1">
+                            {item.perks.map((perk, index) => (
+                              <div key={index} className="flex items-center gap-1 text-xs text-slate-400">
+                                <div className="w-1 h-1 bg-green-400 rounded-full"></div>
+                                <span>{perk}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          {item.purchased ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 border-green-500 text-green-400 hover:bg-green-500/20"
+                                disabled
+                              >
+                                ✓ Purchased
+                              </Button>
+                              {item.canUpgrade && (
+                                <Button
+                                  size="sm"
+                                  className="flex-1 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold"
+                                  onClick={() => {
+                                    console.log(`Upgrading: ${item.name} for ₹${item.upgradePrice}`)
+                                  }}
+                                >
+                                  Upgrade Now
+                                </Button>
+                              )}
+                            </>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold"
+                              onClick={() => {
+                                console.log(`Purchased: ${item.name} for ₹${item.price}`)
+                              }}
+                            >
+                              Buy Now
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

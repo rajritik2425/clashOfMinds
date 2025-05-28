@@ -1,54 +1,26 @@
 "use client"
 
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { Button } from "../../components/ui/button"
 import { Card, CardContent } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
-import {
-  Castle,
-  Shield,
-  Zap,
-  Coins,
-  Sword,
-  Home,
-  Factory,
-  TreePine,
-  Mountain,
-  Flame,
-  RotateCcw,
-  Save,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react"
+import { Castle, Shield, Zap, Coins, Sword, Home, Factory, TreePine, Mountain, Flame, RotateCcw, Save, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useRouter } from "next/navigation"
 
-// Structure and GridCell definitions are implicit in JS
 
-const STRUCTURES = [
-  { id: "castle", name: "Castle", icon: Castle, color: "from-purple-600 to-purple-800", type: "defense" },
-  { id: "tower", name: "Guard Tower", icon: Shield, color: "from-blue-600 to-blue-800", type: "defense" },
-  { id: "cannon", name: "Cannon", icon: Zap, color: "from-yellow-600 to-orange-600", type: "offense" },
-  { id: "mine", name: "Gold Mine", icon: Coins, color: "from-yellow-500 to-yellow-700", type: "resource" },
-  { id: "barracks", name: "Barracks", icon: Sword, color: "from-red-600 to-red-800", type: "military" },
-  { id: "house", name: "House", icon: Home, color: "from-green-600 to-green-800", type: "civilian" },
-  { id: "factory", name: "Factory", icon: Factory, color: "from-gray-600 to-gray-800", type: "production" },
-  { id: "forest", name: "Forest", icon: TreePine, color: "from-emerald-600 to-emerald-800", type: "resource" },
-  { id: "mountain", name: "Mountain", icon: Mountain, color: "from-stone-600 to-stone-800", type: "terrain" },
-  { id: "forge", name: "Forge", icon: Flame, color: "from-orange-600 to-red-600", type: "production" },
-]
 
 export default function BaseBuilder() {
+  const router = useRouter()
   const [grid, setGrid] = useState(() =>
-    Array.from({ length: 80 }, (_, i) => ({ id: i, structure: null })),
+    Array.from({ length: 100 }, (_, i) => ({ id: i, structure: null })),
   )
 
-  const [inventory, setInventory] = useState(() =>
-    STRUCTURES.map((structure) => ({ structure, count: 5 })),
-  )
-
+  const [inventory, setInventory] = useState([])
+  const [originalPositions, setOriginalPositions] = useState({})
   const [draggedStructure, setDraggedStructure] = useState(null)
   const [draggedFromGrid, setDraggedFromGrid] = useState(null)
   const [currentPage, setCurrentPage] = useState(0)
+  const [loading, setLoading] = useState(true)
   const dragCounter = useRef(0)
 
   const structuresPerPage = 4
@@ -57,6 +29,131 @@ export default function BaseBuilder() {
     currentPage * structuresPerPage,
     (currentPage + 1) * structuresPerPage,
   )
+
+  const fetchBaseData = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7', {
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
+        }
+      });
+
+      const data = await response.json();
+      
+      // Initialize empty 10x10 grid (100 cells)
+      const newGrid = Array.from({ length: 100 }, (_, i) => ({ id: i, structure: null }))
+      const positionsMap = {}
+
+      // Create inventory from unique structures
+      const structureTypes = {}
+      
+      // Place buildings at their correct positions and track original positions
+      data.base.forEach(building => {
+        const [row, col] = building.index;
+        const cellId = row * 10 + col; // Convert to linear index for 10x10 grid
+        
+        const structure = {
+          id: building.assetId,
+          name: building.name,
+          icon: Castle, // You might want to map different icons based on building type
+          color: "from-purple-600 to-purple-800", // You might want to map colors based on building type
+          type: "building",
+          imageURL: building.imageURL,
+          level: building.level,
+          health: building.health,
+          _id: building._id
+        }
+
+        newGrid[cellId].structure = structure
+        positionsMap[building._id] = cellId
+
+        // Add to structure types for inventory
+        if (!structureTypes[building.assetId]) {
+          structureTypes[building.assetId] = {
+            structure: structure,
+            count: 0
+          }
+        }
+      });
+
+      // Create inventory with 0 count (since all are placed)
+      const inventoryData = Object.values(structureTypes)
+      
+      setGrid(newGrid)
+      setInventory(inventoryData)
+      setOriginalPositions(positionsMap)
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching base data:', error);
+      setLoading(false)
+    }
+  };
+
+  const saveBaseLayout = async () => {
+    try {
+      const positions = []
+      
+      grid.forEach((cell, index) => {
+        if (cell.structure && cell.structure.id) {
+          const row = Math.floor(index / 10)
+          const col = index % 10
+          const originalPosition = originalPositions[cell.structure.id]
+          
+          // Only include if position has changed
+          if (originalPosition !== index) {
+            positions.push({
+              resourceId: cell.structure.id,
+              newIndex: [row, col]
+            })
+          }
+        }
+      })
+
+      if (positions.length === 0) {
+        alert('No changes to save')
+        return
+      }
+
+      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7/positions', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
+        },
+        body: JSON.stringify({ positions })
+      });
+
+      if (response.ok) {
+        // Update original positions
+        const newOriginalPositions = {}
+        grid.forEach((cell, index) => {
+          if (cell.structure && cell.structure._id) {
+            newOriginalPositions[cell.structure._id] = index
+          }
+        })
+        setOriginalPositions(newOriginalPositions)
+        router.push('/')
+      } else {
+        alert('Failed to save base layout')
+      }
+    } catch (error) {
+      console.error('Error saving base layout:', error);
+      alert('Error saving base layout')
+    }
+  }
+
+  useEffect(() => {
+    fetchBaseData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading base data...</div>
+      </div>
+    )
+  }
 
   const handleDragStart = (structure, fromGrid) => {
     setDraggedStructure(structure)
@@ -193,7 +290,9 @@ export default function BaseBuilder() {
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header Controls */}
         <div className="flex justify-between items-center mb-6">
-          <Button className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/25">
+          <Button 
+            onClick={() => router.push('/')}
+            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/25">
             <X className="w-5 h-5 mr-2" /> Exit Edit Mode
           </Button>
 
@@ -206,7 +305,9 @@ export default function BaseBuilder() {
               <RotateCcw className="w-5 h-5 mr-2" /> Clear All
             </Button>
 
-            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-green-500/25">
+            <Button 
+              onClick={saveBaseLayout}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-green-500/25">
               <Save className="w-5 h-5 mr-2" /> Save
             </Button>
           </div>
@@ -233,9 +334,17 @@ export default function BaseBuilder() {
                       draggable
                       onDragStart={() => handleDragStart(cell.structure, cell.id)}
                       onDragEnd={handleDragEnd}
-                      className={`w-full h-full rounded-lg bg-gradient-to-br ${cell.structure.color} flex items-center justify-center cursor-move shadow-lg`}
+                      className={`w-full h-full rounded-lg bg-gradient-to-br ${cell.structure.color} flex items-center justify-center cursor-move shadow-lg relative`}
                     >
-                      <cell.structure.icon className="w-6 h-6 text-white" />
+                      {cell.structure.imageURL ? (
+                        <img 
+                          src={cell.structure.imageURL || "/placeholder.svg"} 
+                          alt={cell.structure.name}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <cell.structure.icon className="w-6 h-6 text-white" />
+                      )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -310,9 +419,17 @@ export default function BaseBuilder() {
                     className="text-center"
                   >
                     <div
-                      className={`w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br ${item.structure.color} flex items-center justify-center shadow-lg`}
+                      className={`w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br ${item.structure.color} flex items-center justify-center shadow-lg overflow-hidden`}
                     >
-                      <item.structure.icon className="w-8 h-8 text-white" />
+                      {item.structure.imageURL ? (
+                        <img 
+                          src={item.structure.imageURL || "/placeholder.svg"} 
+                          alt={item.structure.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <item.structure.icon className="w-8 h-8 text-white" />
+                      )}
                     </div>
 
                     <h4 className="text-sm font-semibold text-slate-300 mb-1">{item.structure.name}</h4>
