@@ -4,17 +4,27 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
 import { Button } from "../../../components/ui/button"
 import Link from "next/link"
+import { useAuth } from "../../../utils/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function AnalysisPage() {
+    const { isAuthenticated } = useAuth()
+    const router = useRouter()
     const [data, setData] = useState(null)
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            router.push('/login')
+            return
+        }
+
         const stored = localStorage.getItem("analysisData")
         if (stored) {
             setData(JSON.parse(stored))
         }
-    }, [])
+    }, [isAuthenticated, router])
 
+    if (!isAuthenticated) router.push('/login')
     if (!data) return <div className="text-white p-6 font-[Orbitron]">Loading...</div>
 
     return (

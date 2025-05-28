@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/button';
+import { useAuth } from '../../utils/AuthContext';
+import { useRouter } from 'next/navigation';
 
 // JSON data with video information
 const videoData = [
@@ -98,6 +100,11 @@ export default function WatchPage() {
     inProgress: 0,
     notStarted: 0
   });
+  const router = useRouter();
+  const {isAuthenticated} = useAuth();
+  if(!isAuthenticated){
+    router.push('/login');
+  }
 
   // Calculate stats
   useEffect(() => {

@@ -20,6 +20,8 @@ import {
   Target,
   Skull,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "../../utils/AuthContext"
 
 const API_BASE_URL = "https://clash-of-minds.onrender.com/api"
 
@@ -141,6 +143,11 @@ export default function AttackPage() {
   const [attackType, setAttackType] = useState(null)
   const [damageNumbers, setDamageNumbers] = useState([])
   const [destructionEffects, setDestructionEffects] = useState([])
+  const router = useRouter();
+  const {isAuthenticated, token} = useAuth();
+  if(!isAuthenticated){
+    router.push('/login');
+  }
 
   // Helper function to check if a structure is accessible (not surrounded)
   const isStructureAccessible = (cellIndex, base) => {
@@ -183,7 +190,6 @@ export default function AttackPage() {
   // Fetch current user data
   const fetchCurrentUser = async () => {
     try {
-      const token = localStorage.getItem("token")
       if (!token) {
         window.location.href = "/login"
         return null
@@ -198,7 +204,6 @@ export default function AttackPage() {
       
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem("token")
           window.location.href = "/login"
           return null
         }
@@ -218,7 +223,6 @@ export default function AttackPage() {
   // Fetch opponent base
   const fetchOpponentBase = async (userId) => {
     try {
-      const token = localStorage.getItem("token")
       const response = await fetch(`${API_BASE_URL}/resources/${userId}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -239,7 +243,6 @@ export default function AttackPage() {
   // Fetch opponent troops
   const fetchOpponentTroops = async (userId) => {
     try {
-      const token = localStorage.getItem("token")
       const response = await fetch(`${API_BASE_URL}/troops/${userId}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -265,7 +268,6 @@ export default function AttackPage() {
     setBattleTime(120)
 
     try {
-      const token = localStorage.getItem("token")
       if (!token) {
         window.location.href = "/login"
         return
@@ -281,7 +283,6 @@ export default function AttackPage() {
       
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem("token")
           window.location.href = "/login"
           return
         }
@@ -395,7 +396,6 @@ export default function AttackPage() {
     setIsAttacking(false)
 
     try {
-      const token = localStorage.getItem("token")
       if (!token) {
         window.location.href = "/login"
         return

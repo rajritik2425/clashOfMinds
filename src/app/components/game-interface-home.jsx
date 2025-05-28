@@ -9,8 +9,11 @@ import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Badge } from "./ui/badge"
 import TrainBattleModal from '../components/TrainBattleModal'
+import { useAuth } from "../utils/AuthContext"
 
 export default function HomeGameInterface() {
+  const { user, token } = useAuth()
+
   const [selectedCell, setSelectedCell] = useState(null)
   const [hoveredCell, setHoveredCell] = useState(null)
   const [trophies, setTrophies] = useState(0)
@@ -25,8 +28,6 @@ export default function HomeGameInterface() {
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
-
-  
 
   const shopItems = [
     {
@@ -113,10 +114,9 @@ export default function HomeGameInterface() {
 
   const fetchBaseData = async () => {
     try {
-      const response = await fetch("/api/resources/6837169bebb783e2a26dc8c7", {
+      const response = await fetch(`/api/resources/${user._id}`, {
         headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM",
+          Authorization: `Bearer ${token}`,
         },
       })
 
@@ -131,7 +131,7 @@ export default function HomeGameInterface() {
       data.base.forEach((building) => {
         const [row, col] = building.index
         tempGrid[row][col] = {
-          name: building.name, // You might want to map this to a proper name
+          name: building.name,
           image: building.imageURL,
           level: building.level,
           health: building.health,
@@ -152,8 +152,7 @@ export default function HomeGameInterface() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM",
+          Authorization: `Bearer ${token}`,
         },
       })
 
@@ -172,9 +171,10 @@ export default function HomeGameInterface() {
   const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
-    fetchBaseData()
-    fetchUserData()
-  }, [])
+    if (user && token) {
+      fetchBaseData()
+    }
+  }, [user, token])
 
   useEffect(() => {
     return () => {

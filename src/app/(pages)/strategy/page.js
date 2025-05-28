@@ -2,10 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import Chart from 'chart.js/auto';
 import { Button } from '../../components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../utils/AuthContext';
 
 const StrategyPage = () => {
   const [activeTab, setActiveTab] = useState('questions');
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const router = useRouter();
+  const {isAuthenticated} = useAuth();
+  if(!isAuthenticated){
+    router.push('/login');
+  }
   
   // Mock data - in a real app this would come from strategyData.json
   const strategyData = [

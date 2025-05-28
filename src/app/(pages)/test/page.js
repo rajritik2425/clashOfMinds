@@ -8,6 +8,7 @@ import { Label } from "../../components/ui/label"
 import Modal from "../../components/ui/modal"
 import { Clock, Trophy, XCircle, BarChart3 } from "lucide-react"
 import Link from "next/link"
+import { useAuth } from "../../utils/AuthContext"
 
 const testData = {
     duration: 10 * 60,
@@ -22,20 +23,26 @@ const testData = {
 }
 
 export default function TestPage() {
+    const { isAuthenticated } = useAuth()
+    const router = useRouter()
     const [timeLeft, setTimeLeft] = useState(testData.duration)
     const [answers, setAnswers] = useState({})
     const [score, setScore] = useState(0)
     const [percentage, setPercentage] = useState(0)
     const [passed, setPassed] = useState(false)
     const [showModal, setShowModal] = useState(false)
-    const router = useRouter()
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            router.push('/login')
+            return
+        }
+
         const timer = setInterval(() => {
             setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0))
         }, 1000)
         return () => clearInterval(timer)
-    }, [])
+    }, [isAuthenticated, router])
 
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60)

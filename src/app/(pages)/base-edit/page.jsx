@@ -6,11 +6,11 @@ import { Card, CardContent } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { Castle, Shield, Zap, Coins, Sword, Home, Factory, TreePine, Mountain, Flame, RotateCcw, Save, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from "next/navigation"
-
-
+import { useAuth } from "../../utils/AuthContext"
 
 export default function BaseBuilder() {
   const router = useRouter()
+  const { user, token, isAuthenticated } = useAuth()
   const [grid, setGrid] = useState(() =>
     Array.from({ length: 100 }, (_, i) => ({ id: i, structure: null })),
   )
@@ -31,11 +31,16 @@ export default function BaseBuilder() {
   )
 
   const fetchBaseData = async () => {
+    if (!isAuthenticated || !user || !token) {
+      router.push('/login')
+      return
+    }
+
     try {
       setLoading(true)
-      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7', {
+      const response = await fetch(`/api/resources/${user._id}`, {
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -91,6 +96,11 @@ export default function BaseBuilder() {
   };
 
   const saveBaseLayout = async () => {
+    if (!isAuthenticated || !user || !token) {
+      router.push('/login')
+      return
+    }
+
     try {
       const positions = []
       
@@ -115,11 +125,11 @@ export default function BaseBuilder() {
         return
       }
 
-      const response = await fetch('/api/resources/6837169bebb783e2a26dc8c7/positions', {
+      const response = await fetch(`/api/resources/${user._id}/positions`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODM2ZTY1YjYxNTk1ZTU4MGFkODAyY2IiLCJpYXQiOjE3NDg0Mjg0MzgsImV4cCI6MTc0ODUxNDgzOH0.BOlnG7w4RLmvigYta832nFljVwltDJ9AgVG78mZ09RM'
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ positions })
       });
@@ -144,8 +154,10 @@ export default function BaseBuilder() {
   }
 
   useEffect(() => {
-    fetchBaseData();
-  }, []);
+    if (isAuthenticated && user && token) {
+      fetchBaseData();
+    }
+  }, [isAuthenticated, user, token]);
 
   if (loading) {
     return (
