@@ -5,6 +5,8 @@ import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
 import Link from "next/link"
+import BattleLogsModal from './BattleLogsModal'
+
 
 const buildingTypes = [
   {
@@ -35,6 +37,8 @@ export default function HomeGameInterface() {
   const totalCells = gridSize * gridSize
 
   const [buildingsData, setBuildingsData] = useState([])
+  const [showModal, setShowModal] = useState(false);
+
 
   useEffect(() => {
     const tempGrid = Array(gridSize)
@@ -157,10 +161,14 @@ export default function HomeGameInterface() {
                     <span className="text-slate-300">Losses</span>
                     <span className="text-red-400 font-bold">23</span>
                   </div>
+                  <span onClick={() => { setShowModal(true) }} className="text-sm cursor-pointer underline text-blue-200">📜 View Battle Logs</span>
                 </div>
               </CardContent>
             </Card>
           </div>
+          <BattleLogsModal showModal={showModal} setShowModal={setShowModal} />
+
+
 
           {/* Main Game Area */}
           <div className="lg:col-span-8">
