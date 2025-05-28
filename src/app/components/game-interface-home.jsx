@@ -3,14 +3,16 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell } from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Badge } from "./ui/badge"
 import TrainBattleModal from '../components/TrainBattleModal'
+import { useAuth } from "../utils/AuthContext"
 
 export default function HomeGameInterface() {
+  const { user, logout, loading } = useAuth()
   const [selectedCell, setSelectedCell] = useState(null)
   const [hoveredCell, setHoveredCell] = useState(null)
   const [trophies, setTrophies] = useState(0)
@@ -20,6 +22,8 @@ export default function HomeGameInterface() {
   const [challengeCounts, setChallengeCounts] = useState({})
   const [showTrainModal, setShowTrainModal] = useState(false)
   const [showShopModal, setShowShopModal] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileRef = useRef(null)
   const [gold, setGold] = useState(0)
   const [elixir, setElixir] = useState(0)
 
@@ -217,6 +221,49 @@ export default function HomeGameInterface() {
     }, 200) // Shorter delay when leaving popup
   }
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+            Loading...
+          </h2>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center p-8 bg-slate-800/50 rounded-xl border border-slate-700 backdrop-blur-sm">
+          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400 mb-4">
+            Not Authenticated
+          </h2>
+          <p className="text-slate-300 mb-6">Please log in to access the game interface.</p>
+          <Link href="/login">
+            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30">
+              Go to Login
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   if (buildingsData.length === 0) return null
 
   return (
@@ -232,15 +279,35 @@ export default function HomeGameInterface() {
         <div className="flex justify-between items-center mb-6">
           {/* Left Side */}
           <div className="flex items-center gap-4">
-            <Link href="/login">
+            <div className="relative" ref={profileRef}>
               <Button
                 size="lg"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
               >
                 <User className="w-5 h-5 mr-2" />
                 Profile
               </Button>
-            </Link>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-lg border border-slate-700 py-2 z-50">
+                  <div className="px-4 py-2 border-b border-slate-700">
+                    <p className="text-sm text-slate-300">Signed in as</p>
+                    <p className="text-white font-medium truncate">{user?.name}</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      logout()
+                      setIsProfileOpen(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign out
+                  </Button>
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2">
               <Button
