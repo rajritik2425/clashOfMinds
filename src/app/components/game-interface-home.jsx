@@ -218,26 +218,6 @@ export default function HomeGameInterface() {
 
           {/* Right Sidebar */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Hints Card */}
-            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-              <CardContent className="p-4 space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-blue-500/30 font-bold"
-                >
-                  <HelpCircle className="w-4 h-4 mr-2" />
-                  Hints
-                </Button>
-                {/* Hints Progress Bar */}
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-400">10 / 50</div>
-                  <div className="w-full h-2 bg-slate-700 rounded-full">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: "20%" }} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Resource Details */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-3">
@@ -269,6 +249,20 @@ export default function HomeGameInterface() {
                     </div>
                     <div className="w-full h-2 bg-slate-700 rounded-full">
                       <div className="h-full bg-purple-400 rounded-full" style={{ width: "10%" }} />
+                    </div>
+                  </div>
+
+                  {/* Hints */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between p-2 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-lg border border-blue-500/30">
+                      <div className="flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm text-slate-300">Hints</span>
+                      </div>
+                      <span className="text-blue-400 font-bold">10 / 50</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-700 rounded-full">
+                      <div className="h-full bg-blue-400 rounded-full" style={{ width: "20%" }} />
                     </div>
                   </div>
                 </div>
