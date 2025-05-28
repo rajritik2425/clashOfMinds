@@ -6,6 +6,8 @@ import { Card, CardContent } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play } from "lucide-react"
 import Link from "next/link"
+import Modal from './ui/modal'
+import BattleLogsModal from './BattleLogsModal'
 
 const buildingTypes = [
   {
@@ -27,7 +29,7 @@ const buildingTypes = [
 ]
 
 // Dummy buildings data
-const buildingsData = Array(10).fill(null).map(() => 
+const buildingsData = Array(10).fill(null).map(() =>
   Array(10).fill(null).map(() => {
     // Randomly decide if this cell should have a building (30% chance)
     if (Math.random() < 0.3) {
@@ -45,7 +47,8 @@ const buildingsData = Array(10).fill(null).map(() =>
 
 export default function HomeGameInterface() {
   const [selectedCell, setSelectedCell] = useState(null)
-  const [hoveredCell, setHoveredCell] = useState(null)
+  const [hoveredCell, setHoveredCell] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
@@ -160,10 +163,12 @@ export default function HomeGameInterface() {
                     <span className="text-slate-300">Losses</span>
                     <span className="text-red-400 font-bold">23</span>
                   </div>
+                  <span onClick={() => { setShowModal(true) }} className="text-sm cursor-pointer underline text-blue-200">📜 View Battle Logs</span>
                 </div>
               </CardContent>
             </Card>
           </div>
+          <BattleLogsModal showModal={showModal} setShowModal={setShowModal} />
 
           {/* Main Game Area */}
           <div className="lg:col-span-8">
@@ -182,7 +187,7 @@ export default function HomeGameInterface() {
                     const row = Math.floor(i / gridSize);
                     const col = i % gridSize;
                     const building = buildingsData[row][col];
-                    
+
                     return (
                       <div
                         key={i}
@@ -202,7 +207,7 @@ export default function HomeGameInterface() {
                         {building && (
                           <img src={building.image} alt={building.name} className="w-full h-full object-cover rounded-lg" />
                         )}
-                        
+
                         {hoveredCell === i && building && (
                           <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
                             <div className="text-sm font-bold">{building.name}</div>

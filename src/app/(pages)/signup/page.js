@@ -24,10 +24,11 @@ export default function SignUpPage() {
   const [course, setCourse] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [name, setName]  = useState("");
 
   const handleSignUp = (e) => {
     e.preventDefault()
-    console.log("Signup attempt:", { email, phone, course, password })
+    console.log("Signup attempt:", { email, phone, course, password, name })
   }
 
   return (
@@ -64,6 +65,21 @@ export default function SignUpPage() {
 
           <CardContent className="space-y-6">
             <form onSubmit={handleSignUp} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="name" className="text-slate-300 font-medium">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  type="name"
+                  placeholder="Ritik Raj"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-cyan-500 focus:ring-cyan-500/20 h-12"
+                  required
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-300 font-medium">
                   Email
