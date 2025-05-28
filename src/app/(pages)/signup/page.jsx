@@ -18,13 +18,15 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAuth } from "../../utils/AuthContext"
 
 export default function SignUpPage() {
   const router = useRouter()
+  const { signup } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
-  const [course, setCourse] = useState("") // Initialize state
+  const [course, setCourse] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [name, setName] = useState("")
@@ -36,10 +38,10 @@ export default function SignUpPage() {
   const handleSignUp = async (e) => {
     e.preventDefault()
     setError("")
-
-    // if (!validateForm()) {
-    //   return
-    // }
+    if(password !== confirmPassword){
+      alert("Password and Confirm Password are not same")
+      return;
+    }
 
     setIsLoading(true)
 
@@ -70,18 +72,12 @@ export default function SignUpPage() {
         throw new Error(data.message || `Registration failed: ${data.error || response.status}`);
       }
 
-      // Store the token
-      if (data.token) {
-        localStorage.setItem("token", data.token)
-        localStorage.setItem("user", JSON.stringify({
-          name,
-          email,
-          course
-        }))
-      }
+      // Use the signup function from AuthContext
+      await signup(data.user, data.token);
+      
+      // Redirect to home page
+      window.location.href = '/';
 
-      // Redirect to login page after successful signup
-      router.push("/login")
     } catch (error) {
       console.error("Signup error:", error)
       if (error.message === "Failed to fetch") {

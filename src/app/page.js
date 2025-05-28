@@ -1,3 +1,4 @@
+'use client'
 import HomeGameInterface from "./components/game-interface-home";
 import { useAuth } from "./utils/AuthContext";
 
