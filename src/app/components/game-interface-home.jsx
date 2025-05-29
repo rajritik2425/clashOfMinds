@@ -1,38 +1,53 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "./ui/button"
-import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Shield, Dumbbell, LogOut, Edit, Group } from "lucide-react"
-import Link from "next/link"
-import BattleLogsModal from "./BattleLogsModal"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
-import { Badge } from "./ui/badge"
-import TrainBattleModal from "../components/TrainBattleModal"
-import { useAuth } from "../utils/AuthContext"
-import Loading from "./ui/loading"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import TrophyBanner from "./TrophyBanner"
+import { useState, useEffect, useRef } from "react";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import {
+  User,
+  Trophy,
+  Sword,
+  Coins,
+  Zap,
+  HelpCircle,
+  ShoppingCart,
+  Settings,
+  Shield,
+  Play,
+  Dumbbell,
+  LogOut,
+  Edit,
+  Group,
+} from "lucide-react";
+import Link from "next/link";
+import BattleLogsModal from "./BattleLogsModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Badge } from "./ui/badge";
+import TrainBattleModal from "../components/TrainBattleModal";
+import { useAuth } from "../utils/AuthContext";
+import Loading from "./ui/loading";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import TrophyBanner from "./TrophyBanner";
 
 export default function HomeGameInterface() {
-  const { user, logout, token } = useAuth()
-  const [selectedCell, setSelectedCell] = useState(null)
-  const [hoveredCell, setHoveredCell] = useState(null)
-  const [trophies, setTrophies] = useState(0)
-  const hoverTimeoutRef = useRef(null)
-  const [buildingsData, setBuildingsData] = useState([])
-  const [challengeCounts, setChallengeCounts] = useState({})
-  const [showTrainModal, setShowTrainModal] = useState(false)
-  const [showShopModal, setShowShopModal] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileRef = useRef(null)
-  const [gold, setGold] = useState(0)
-  const [elixir, setElixir] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const [showTrophyBanner, setShowTrophyBanner] = useState(false)
-  const isHoveringPopupRef = useRef(false)
+  const { user, logout, token } = useAuth();
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [hoveredCell, setHoveredCell] = useState(null);
+  const [trophies, setTrophies] = useState(0);
+  const hoverTimeoutRef = useRef(null);
+  const isHoveringPopupRef = useRef(false);
+  const [buildingsData, setBuildingsData] = useState([]);
+  const [challengeCounts, setChallengeCounts] = useState({});
+  const [showTrainModal, setShowTrainModal] = useState(false);
+  const [showShopModal, setShowShopModal] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const [gold, setGold] = useState(0);
+  const [elixir, setElixir] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [showTrophyBanner, setShowTrophyBanner] = useState(false);
 
   const gridSize = 10;
   const totalCells = gridSize * gridSize;
@@ -147,11 +162,11 @@ export default function HomeGameInterface() {
           assetId: building.assetId,
           _id: building._id,
           costToUpgrade: building.costToUpgrade,
-        }
-      })
+        };
+      });
 
-      setBuildingsData(tempGrid)
-      setLoading(false)
+      setBuildingsData(tempGrid);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching base data:", error);
     }
@@ -197,27 +212,33 @@ export default function HomeGameInterface() {
 
   useEffect(() => {
     // Load challenge counts from localStorage when component mounts
-    const savedChallengeCounts = localStorage.getItem("challengeCounts")
+
+    const savedChallengeCounts = localStorage.getItem("challengeCounts");
+
     if (savedChallengeCounts) {
       try {
-        setChallengeCounts(JSON.parse(savedChallengeCounts))
+        setChallengeCounts(JSON.parse(savedChallengeCounts));
       } catch (error) {
-        console.error("Error parsing saved challenge counts:", error)
+        console.error("Error parsing saved challenge counts:", error);
       }
     }
-    const savedGold = localStorage.getItem("userGold")
+
+    const savedGold = localStorage.getItem("userGold");
+
     if (savedGold) {
-      setGold(JSON.parse(savedGold))
+      setGold(JSON.parse(savedGold));
     }
-  }, [])
+  }, []);
 
   // Add this useEffect to save challenge counts whenever they change
+
   useEffect(() => {
     // Save challenge counts to localStorage whenever they change
+
     if (Object.keys(challengeCounts).length > 0) {
-      localStorage.setItem("challengeCounts", JSON.stringify(challengeCounts))
+      localStorage.setItem("challengeCounts", JSON.stringify(challengeCounts));
     }
-  }, [challengeCounts])
+  }, [challengeCounts]);
 
   const clearHoverTimeout = () => {
     if (hoverTimeoutRef.current) {
@@ -260,9 +281,9 @@ export default function HomeGameInterface() {
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (loading) {
     return <Loading />;
@@ -274,7 +295,7 @@ export default function HomeGameInterface() {
     { level: "Easy", image: "/images/easy.webp", points: +5 },
     { level: "Medium", image: "/images/medium.webp", points: +2 },
     { level: "Hard", image: "/images/hard.webp", points: +1 },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -293,7 +314,8 @@ export default function HomeGameInterface() {
               <Button
                 size="lg"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30">
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
+              >
                 <User className="w-5 h-5 mr-2" />
                 Profile
               </Button>
@@ -311,7 +333,8 @@ export default function HomeGameInterface() {
                       logout();
                       setIsProfileOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center gap-2">
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center gap-2"
+                  >
                     <LogOut className="w-4 h-4" />
                     Sign out
                   </Button>
@@ -329,7 +352,8 @@ export default function HomeGameInterface() {
                 <Button
                   variant="outline"
                   className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold"
-                  onClick={() => setShowTrophyBanner(true)}>
+                  onClick={() => setShowTrophyBanner(true)}
+                >
                   <div className="flex gap-2 items-center">
                     <Trophy className="w-4 h-4" />
                     <span>Trophies</span>
@@ -341,14 +365,15 @@ export default function HomeGameInterface() {
 
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4">
-                <Button
-                  variant="outline"
-                  className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-red-500/30 font-bold"
-                  onClick={() => router.push("/attack")}
-                >
-                  <Sword className="w-4 h-4 mr-2" />
-                  Attack
-                </Button>
+                <Link href="/attack">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-red-500/30 font-bold"
+                  >
+                    <Sword className="w-4 h-4 mr-2" />
+                    Attack
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -357,7 +382,8 @@ export default function HomeGameInterface() {
                 <Button
                   onClick={() => setShowTrainModal(true)}
                   variant="outline"
-                  className="w-full bg-green-500 hover:from-yellow-600 hover:to-orange-600 text-white border-yellow-400/30 font-bold">
+                  className="w-full bg-green-500 hover:from-yellow-600 hover:to-orange-600 text-white border-yellow-400/30 font-bold"
+                >
                   <Dumbbell className="w-4 h-4 mr-2" />
                   Train
                 </Button>
@@ -366,7 +392,8 @@ export default function HomeGameInterface() {
                 {difficulties.map((d) => (
                   <div
                     key={d.level}
-                    className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full">
+                    className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full"
+                  >
                     <Image
                       src={d.image}
                       alt={d.level}
@@ -404,7 +431,8 @@ export default function HomeGameInterface() {
                     onClick={() => {
                       setShowModal(true);
                     }}
-                    className="text-sm cursor-pointer underline text-blue-200">
+                    className="text-sm cursor-pointer underline text-blue-200"
+                  >
                     📜 View Battle Logs
                   </span>
                 </div>
@@ -443,7 +471,8 @@ export default function HomeGameInterface() {
                           }
                         `}
                         onMouseEnter={() => handleCellMouseEnter(i)}
-                        onMouseLeave={handleCellMouseLeave}>
+                        onMouseLeave={handleCellMouseLeave}
+                      >
                         {building && (
                           <img
                             src={building.image || "/placeholder.svg"}
@@ -451,11 +480,13 @@ export default function HomeGameInterface() {
                             className="w-full h-full object-cover rounded-lg"
                           />
                         )}
+
                         {hoveredCell === i && building && (
                           <div
                             className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
                             onMouseEnter={handlePopupMouseEnter}
-                            onMouseLeave={handlePopupMouseLeave}>
+                            onMouseLeave={handlePopupMouseLeave}
+                          >
                             <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
                               {building.name === "PW Mine" ? (
                                 <Button
@@ -463,9 +494,14 @@ export default function HomeGameInterface() {
                                   className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-yellow-500/25 border border-yellow-400/30"
                                   onClick={(e) => {
                                     e.stopPropagation();
+
                                     // Add gold collection logic here
+
+                                    setGold(gold + 10);
+
                                     console.log("Collecting gold from PW Mine");
-                                  }}>
+                                  }}
+                                >
                                   <Coins className="w-3 h-3 mr-1" />
                                   Collect Gold
                                 </Button>
@@ -475,11 +511,16 @@ export default function HomeGameInterface() {
                                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-purple-500/25 border border-purple-400/30"
                                   onClick={(e) => {
                                     e.stopPropagation();
+
+                                    setElixir(elixir + 10);
+
                                     // Add elixir collection logic here
+
                                     console.log(
                                       "Collecting elixir from Elixir Collector"
                                     );
-                                  }}>
+                                  }}
+                                >
                                   <Zap className="w-3 h-3 mr-1" />
                                   Collect Elixir
                                 </Button>
@@ -495,10 +536,12 @@ export default function HomeGameInterface() {
                                         className="w-full h-full object-cover rounded-md"
                                       />
                                     </div>
+
                                     <div>
                                       <div className="text-sm font-bold text-white">
                                         {building.name}
                                       </div>
+
                                       <div className="text-xs text-slate-300">
                                         Level {building.level}
                                       </div>
@@ -510,17 +553,20 @@ export default function HomeGameInterface() {
                                       <span className="text-slate-400">
                                         Health
                                       </span>
+
                                       <span className="text-green-400 font-medium">
                                         {building.health}%
                                       </span>
                                     </div>
+
                                     <div className="flex justify-between text-xs">
                                       <span className="text-slate-400">
                                         Upgrade Level
                                       </span>
+
                                       <span className="text-yellow-400 font-medium">
                                         {challengeCounts[building.assetId] || 0}
-                                        /10
+                                        /3
                                       </span>
                                     </div>
                                   </div>
@@ -528,19 +574,161 @@ export default function HomeGameInterface() {
                                   <Button
                                     size="sm"
                                     className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                       e.stopPropagation();
+
                                       const assetId = building.assetId;
+
+                                      const userId = user._id;
+
+                                      // Check if user has sufficient gold
+
+                                      if (gold < building.costToUpgrade) {
+                                        alert(
+                                          `Insufficient gold! You need ${building.costToUpgrade} gold to accept this challenge.`
+                                        );
+
+                                        return;
+                                      }
+
+                                      // Deduct gold and update state
+
+                                      setGold(gold - building.costToUpgrade);
+
+                                      // Save gold to localStorage
+
+                                      localStorage.setItem(
+                                        "userGold",
+                                        JSON.stringify(
+                                          gold - building.costToUpgrade
+                                        )
+                                      );
+
                                       setChallengeCounts((prev) => {
                                         const currentCount = prev[assetId] || 0;
+
                                         const newCount = currentCount + 1;
-                                        return newCount >= 10
-                                          ? { ...prev, [assetId]: 0 }
-                                          : { ...prev, [assetId]: newCount };
+
+                                        // Check if we've reached the upgrade threshold
+
+                                        if (newCount >= 3 && assetId) {
+                                          // Make API call to upgrade the structure
+
+                                          fetch(
+                                            `/api/resources/${userId}/upgrade`,
+                                            {
+                                              method: "PUT",
+
+                                              headers: {
+                                                "Content-Type":
+                                                  "application/json",
+
+                                                Authorization: `Bearer ${token}`,
+                                              },
+
+                                              body: JSON.stringify({
+                                                assetId: assetId,
+                                              }),
+                                            }
+                                          )
+                                            .then((response) => {
+                                              if (response.ok) {
+                                                console.log(
+                                                  `Structure ${building.name} upgraded successfully!`
+                                                );
+
+                                                // Reset the challenge count for this structure in localStorage
+
+                                                const updatedCounts = {
+                                                  ...prev,
+                                                  [assetId]: 0,
+                                                };
+
+                                                localStorage.setItem(
+                                                  "challengeCounts",
+
+                                                  JSON.stringify(updatedCounts)
+                                                );
+
+                                                // Refresh base data after upgrade
+
+                                                // fetchBaseData()
+                                              } else {
+                                                console.error(
+                                                  "Failed to upgrade structure"
+                                                );
+
+                                                // Revert the count if upgrade failed
+
+                                                const revertedCounts = {
+                                                  ...prev,
+                                                  [assetId]: currentCount,
+                                                };
+
+                                                localStorage.setItem(
+                                                  "challengeCounts",
+
+                                                  JSON.stringify(revertedCounts)
+                                                );
+
+                                                setChallengeCounts(
+                                                  revertedCounts
+                                                );
+                                              }
+                                            })
+
+                                            .catch((error) => {
+                                              console.error(
+                                                "Error upgrading structure:",
+                                                error
+                                              );
+
+                                              // Revert the count if upgrade failed
+
+                                              const revertedCounts = {
+                                                ...prev,
+                                                [assetId]: currentCount,
+                                              };
+
+                                              localStorage.setItem(
+                                                "challengeCounts",
+
+                                                JSON.stringify(revertedCounts)
+                                              );
+
+                                              setChallengeCounts(
+                                                revertedCounts
+                                              );
+                                            });
+
+                                          return { ...prev, [assetId]: 0 }; // Reset to 0 immediately for UI feedback
+                                        } else {
+                                          return {
+                                            ...prev,
+                                            [assetId]: newCount,
+                                          };
+                                        }
                                       });
-                                    }}>
+
+                                      // Navigate to appropriate page based on building type
+
+                                      if (building.name === "Revision Lab")
+                                        router.push("/notes");
+                                      else if (building.name === "Strategy Lab")
+                                        router.push("/strategy");
+                                      else if (
+                                        building.name === "Live Arena" ||
+                                        building.name === "Lecture Hall"
+                                      )
+                                        router.push("/video");
+                                      else if (building.name === "DPP Tower")
+                                        router.push("/test");
+                                      else if (building.name === "Mock Tower")
+                                        router.push("/test/instructions");
+                                    }}
+                                  >
                                     <Shield className="w-3 h-3 mr-1" />
-                                    Accept Challenge
+                                    Accept Challenge ({building.costToUpgrade})
                                   </Button>
                                 </>
                               )}
@@ -550,178 +738,7 @@ export default function HomeGameInterface() {
                               </div>
                             </div>
                           </div>
-                        )} : (
-                          <>
-                            {building && (
-                              <img
-                                src={building.image || "/placeholder.svg"}
-                                alt={building.name}
-                                className="w-full h-full object-cover rounded-lg"
-                              />
-                            )}
-                            {hoveredCell === i && building && (
-                              <div
-                                className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
-                                onMouseEnter={handlePopupMouseEnter}
-                                onMouseLeave={handlePopupMouseLeave}
-                              >
-                                <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
-                                  {building.name === "PW Mine" ? (
-                                    <Button
-                                      size="sm"
-                                      className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-yellow-500/25 border border-yellow-400/30"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        // Add gold collection logic here
-                                        setGold(gold + 10)
-                                        console.log("Collecting gold from PW Mine")
-                                      }}
-                                    >
-                                      <Coins className="w-3 h-3 mr-1" />
-                                      Collect Gold
-                                    </Button>
-                                  ) : building.name === "Elixir Collector" ? (
-                                    <Button
-                                      size="sm"
-                                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-purple-500/25 border border-purple-400/30"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        setElixir(elixir + 10)
-                                        // Add elixir collection logic here
-                                        console.log("Collecting elixir from Elixir Collector")
-                                      }}
-                                    >
-                                      <Zap className="w-3 h-3 mr-1" />
-                                      Collect Elixir
-                                    </Button>
-                                  ) : (
-                                    <>
-                                      <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
-                                          <img
-                                            src={building.image || "/placeholder.svg"}
-                                            alt={building.name}
-                                            className="w-full h-full object-cover rounded-md"
-                                          />
-                                        </div>
-                                        <div>
-                                          <div className="text-sm font-bold text-white">{building.name}</div>
-                                          <div className="text-xs text-slate-300">Level {building.level}</div>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2 mb-4">
-                                        <div className="flex justify-between text-xs">
-                                          <span className="text-slate-400">Health</span>
-                                          <span className="text-green-400 font-medium">{building.health}%</span>
-                                        </div>
-                                        <div className="flex justify-between text-xs">
-                                          <span className="text-slate-400">Upgrade Level</span>
-                                          <span className="text-yellow-400 font-medium">
-                                            {challengeCounts[building.assetId] || 0}/3
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      <Button
-                                        size="sm"
-                                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
-                                        onClick={async (e) => {
-                                          e.stopPropagation()
-                                          const assetId = building.assetId
-                                          const userId = user._id
-
-                                          // Check if user has sufficient gold
-                                          if (gold < building.costToUpgrade) {
-                                            alert(`Insufficient gold! You need ${building.costToUpgrade} gold to accept this challenge.`)
-                                            return
-                                          }
-
-                                          // Deduct gold and update state
-                                          setGold(gold - building.costToUpgrade)
-                                          
-                                          // Save gold to localStorage
-                                          localStorage.setItem('userGold', JSON.stringify(gold - building.costToUpgrade))
-
-                                          setChallengeCounts((prev) => {
-                                            const currentCount = prev[assetId] || 0
-                                            const newCount = currentCount + 1
-
-                                            // Check if we've reached the upgrade threshold
-                                            if (newCount >= 3 && assetId) {
-                                              // Make API call to upgrade the structure
-                                              fetch(`/api/resources/${userId}/upgrade`, {
-                                                method: "PUT",
-                                                headers: {
-                                                  "Content-Type": "application/json",
-                                                  Authorization: `Bearer ${token}`,
-                                                },
-                                                body: JSON.stringify({
-                                                  assetId: assetId,
-                                                }),
-                                              })
-                                                .then((response) => {
-                                                  if (response.ok) {
-                                                    console.log(`Structure ${building.name} upgraded successfully!`)
-                                                    // Reset the challenge count for this structure in localStorage
-                                                    const updatedCounts = { ...prev, [assetId]: 0 }
-                                                    localStorage.setItem(
-                                                      "challengeCounts",
-                                                      JSON.stringify(updatedCounts),
-                                                    )
-                                                    // Refresh base data after upgrade
-                                                    // fetchBaseData()
-                                                  } else {
-                                                    console.error("Failed to upgrade structure")
-                                                    // Revert the count if upgrade failed
-                                                    const revertedCounts = { ...prev, [assetId]: currentCount }
-                                                    localStorage.setItem(
-                                                      "challengeCounts",
-                                                      JSON.stringify(revertedCounts),
-                                                    )
-                                                    setChallengeCounts(revertedCounts)
-                                                  }
-                                                })
-                                                .catch((error) => {
-                                                  console.error("Error upgrading structure:", error)
-                                                  // Revert the count if upgrade failed
-                                                  const revertedCounts = { ...prev, [assetId]: currentCount }
-                                                  localStorage.setItem(
-                                                    "challengeCounts",
-                                                    JSON.stringify(revertedCounts),
-                                                  )
-                                                  setChallengeCounts(revertedCounts)
-                                                })
-
-                                              return { ...prev, [assetId]: 0 } // Reset to 0 immediately for UI feedback
-                                            } else {
-                                              return { ...prev, [assetId]: newCount }
-                                            }
-                                          })
-
-                                          // Navigate to appropriate page based on building type
-                                          if (building.name === "Revision Lab") router.push("/notes")
-                                          else if (building.name === "Strategy Lab") router.push("/strategy")
-                                          else if (building.name === "Live Arena" || building.name === "Lecture Hall")
-                                            router.push("/video")
-                                          else if (building.name === "DPP Tower") router.push("/test")
-                                          else if (building.name === "Mock Tower") router.push("/test/instructions")
-                                        }}
-                                      >
-                                        <Shield className="w-3 h-3 mr-1" />
-                                        Accept Challenge ({building.costToUpgrade})
-                                      </Button>
-                                    </>
-                                  )}
-
-                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2">
-                                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        )
+                        )}
 
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2">
                           <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
@@ -811,7 +828,8 @@ export default function HomeGameInterface() {
                 <Button
                   size="lg"
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-green-500/25 border border-green-400/30"
-                  onClick={() => setShowShopModal(true)}>
+                  onClick={() => setShowShopModal(true)}
+                >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Shop
                 </Button>
@@ -823,7 +841,8 @@ export default function HomeGameInterface() {
                 <CardContent className="p-4">
                   <Button
                     size="lg"
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30">
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
+                  >
                     <Edit className="w-5 h-5 mr-2" />
                     Edit
                   </Button>
@@ -836,7 +855,8 @@ export default function HomeGameInterface() {
                 <CardContent className="p-4">
                   <Button
                     size="lg"
-                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30">
+                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
+                  >
                     <Group className="w-5 h-5 mr-2" />
                     Clan
                   </Button>
@@ -895,7 +915,8 @@ export default function HomeGameInterface() {
                   key={item.id}
                   className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
                     item.purchased ? "border-green-500/50 bg-green-900/20" : ""
-                  }`}>
+                  }`}
+                >
                   {item.discount && (
                     <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold">
                       -{item.discount}% OFF
@@ -928,7 +949,8 @@ export default function HomeGameInterface() {
                             </p>
                             <Badge
                               variant="outline"
-                              className="text-xs border-slate-500 text-slate-300 mt-2">
+                              className="text-xs border-slate-500 text-slate-300 mt-2"
+                            >
                               {item.category}
                             </Badge>
                           </div>
@@ -959,7 +981,8 @@ export default function HomeGameInterface() {
                             {item.perks.map((perk, index) => (
                               <div
                                 key={index}
-                                className="flex items-center gap-1 text-xs text-slate-400">
+                                className="flex items-center gap-1 text-xs text-slate-400"
+                              >
                                 <div className="w-1 h-1 bg-green-400 rounded-full"></div>
                                 <span>{perk}</span>
                               </div>
@@ -974,7 +997,8 @@ export default function HomeGameInterface() {
                                 size="sm"
                                 variant="outline"
                                 className="flex-1 border-green-500 text-green-400 hover:bg-green-500/20"
-                                disabled>
+                                disabled
+                              >
                                 ✓ Purchased
                               </Button>
                               {item.canUpgrade && (
@@ -985,7 +1009,8 @@ export default function HomeGameInterface() {
                                     console.log(
                                       `Upgrading: ${item.name} for ₹${item.upgradePrice}`
                                     );
-                                  }}>
+                                  }}
+                                >
                                   Upgrade Now
                                 </Button>
                               )}
@@ -998,7 +1023,8 @@ export default function HomeGameInterface() {
                                 console.log(
                                   `Purchased: ${item.name} for ₹${item.price}`
                                 );
-                              }}>
+                              }}
+                            >
                               Buy Now
                             </Button>
                           )}
