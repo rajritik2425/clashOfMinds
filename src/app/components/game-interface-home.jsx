@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut, Edit } from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut, Edit, Group } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
@@ -45,7 +45,7 @@ export default function HomeGameInterface() {
       price: 2999,
       originalPrice: 4999,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "batch",
       discount: 40,
       purchased: true,
@@ -66,7 +66,7 @@ export default function HomeGameInterface() {
       price: 3999,
       originalPrice: 5999,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "batch",
       discount: 33,
       purchased: false,
@@ -86,7 +86,7 @@ export default function HomeGameInterface() {
       price: 1499,
       originalPrice: 2499,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "test-series",
       discount: 40,
       purchased: false,
@@ -104,7 +104,7 @@ export default function HomeGameInterface() {
       price: 1299,
       originalPrice: 1999,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "test-series",
       discount: 35,
       purchased: true,
@@ -628,11 +628,26 @@ export default function HomeGameInterface() {
                 <Button
                   size="lg"
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
+                  onClick={() => setShowShopModal(true)}
                 >
                   <Edit className="w-5 h-5 mr-2" />
                   Edit
                 </Button>
               </CardContent>
+              </Link>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Link href='clan'>
+                <CardContent className="p-4">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
+                  >
+                    <Group className="w-5 h-5 mr-2" />
+                    Clan
+                  </Button>
+                </CardContent>
               </Link>
             </Card>
 
@@ -683,11 +698,11 @@ export default function HomeGameInterface() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2 mt-4">
+            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2 ">
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${item.purchased ? "border-green-500/50 bg-green-900/20" : ""
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 mt-2 relative ${item.purchased ? "border-green-500/50 bg-green-900/20" : ""
                     }`}
                 >
                   {item.discount && (

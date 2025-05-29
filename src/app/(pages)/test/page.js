@@ -14,13 +14,55 @@ import Loading from "../../components/ui/loading";
 const testData = {
     duration: 10 * 60,
     questions: [
-        { id: "q1", question: "Which of the following is a JavaScript framework?", options: ["Django", "Laravel", "React", "Flask"], answer: "React" },
-        { id: "q2", question: "What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
-        { id: "q3", question: "Which language is used for styling web pages?", options: ["HTML", "JQuery", "CSS", "XML"], answer: "CSS" },
-        { id: "q4", question: "Which is not a programming language?", options: ["Python", "HTML", "Java", "C++"], answer: "HTML" },
-        { id: "q5", question: "Which company developed React?", options: ["Google", "Facebook", "Microsoft", "Apple"], answer: "Facebook" },
-        { id: "q6", question: "What is 2 + 2?", options: ["3", "4", "5", "22"], answer: "4" },
-    ],
+        {
+          id: "q1",
+          question: "If the roots of the equation x² - 5x + k = 0 are real and equal, then the value of k is:",
+          options: ["25", "5", "6.25", "None of these"],
+          answer: "6.25"
+        },
+        {
+          id: "q2",
+          question: "Which of the following compounds exhibits resonance?",
+          options: ["C₂H₆", "CH₄", "CH₃COOH", "C₂H₅OH"],
+          answer: "CH₃COOH"
+        },
+        {
+          id: "q3",
+          question: "A particle moves with uniform acceleration. Its velocity after 5 seconds is 20 m/s and after 10 seconds is 40 m/s. What is the acceleration?",
+          options: ["2 m/s²", "4 m/s²", "3 m/s²", "5 m/s²"],
+          answer: "4 m/s²"
+        },
+        {
+          id: "q4",
+          question: "Which of the following has the highest bond enthalpy?",
+          options: ["O₂", "N₂", "F₂", "Cl₂"],
+          answer: "N₂"
+        },
+        {
+          id: "q5",
+          question: "The area enclosed between the curve y = x² and the line y = 4 is:",
+          options: ["8/3", "16/3", "32/3", "None of these"],
+          answer: "32/3"
+        },
+        {
+          id: "q6",
+          question: "Which among the following elements has the smallest atomic radius?",
+          options: ["Na", "Mg", "Al", "Si"],
+          answer: "Si"
+        },
+        {
+          id: "q7",
+          question: "The dimensional formula for Planck’s constant is:",
+          options: ["ML²T⁻¹", "ML²T⁻²", "MLT⁻²", "ML²T⁻³"],
+          answer: "ML²T⁻¹"
+        },
+        {
+          id: "q8",
+          question: "If sinθ + cosθ = √2, then the value of tanθ is:",
+          options: ["1", "2", "√2", "0"],
+          answer: "1"
+        }
+      ],      
 }
 
 export default function TestPage() {
