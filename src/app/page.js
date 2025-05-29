@@ -1,14 +1,14 @@
 'use client'
 import HomeGameInterface from "./components/game-interface-home";
 import { useAuth } from "./utils/AuthContext";
+import Loading from './components/ui/loading'
 
 export default function Home() {
-  const {isAuthenticated} = useAuth();
-  if(!isAuthenticated){
-    return <>
-    Loading...
-    </>
-  }
+  const {user} = useAuth();
+  if(!user){
+    return <Loading/>
+  } 
+  
   return (
     <>
       <HomeGameInterface />

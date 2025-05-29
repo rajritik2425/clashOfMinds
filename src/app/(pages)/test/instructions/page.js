@@ -6,12 +6,14 @@ import { GamepadIcon, BookOpen, Home } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../../utils/AuthContext"
+import Loading from "../../../components/ui/loading"
 
 export default function TestInstructionsPage() {
   const router = useRouter();
   const {isAuthenticated} = useAuth();
+  console.log(isAuthenticated);
   if(!isAuthenticated){
-    router.push('/login');
+    return <Loading/>
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a001f] via-[#1c0049] to-[#0a001f] flex items-center justify-center p-6 font-[Orbitron] relative overflow-hidden">

@@ -9,6 +9,7 @@ import Modal from "../../components/ui/modal"
 import { Clock, Trophy, XCircle, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "../../utils/AuthContext"
+import Loading from "../../components/ui/loading";
 
 const testData = {
     duration: 10 * 60,
@@ -32,17 +33,7 @@ export default function TestPage() {
     const [passed, setPassed] = useState(false)
     const [showModal, setShowModal] = useState(false)
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login')
-            return
-        }
-
-        const timer = setInterval(() => {
-            setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0))
-        }, 1000)
-        return () => clearInterval(timer)
-    }, [isAuthenticated, router])
+    
 
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60)
@@ -83,6 +74,17 @@ export default function TestPage() {
             passed: hasPassed,
         }))
     }
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            <Loading/>
+        }
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0))
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [isAuthenticated, router])
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] text-white px-6 py-8 font-mono">

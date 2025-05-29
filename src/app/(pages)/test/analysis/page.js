@@ -6,6 +6,7 @@ import { Button } from "../../../components/ui/button"
 import Link from "next/link"
 import { useAuth } from "../../../utils/AuthContext"
 import { useRouter } from "next/navigation"
+import Loading from "../../../components/ui/loading"
 
 export default function AnalysisPage() {
     const { isAuthenticated } = useAuth()
@@ -13,18 +14,13 @@ export default function AnalysisPage() {
     const [data, setData] = useState(null)
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login')
-            return
-        }
-
         const stored = localStorage.getItem("analysisData")
         if (stored) {
             setData(JSON.parse(stored))
         }
     }, [isAuthenticated, router])
 
-    if (!isAuthenticated) router.push('/login')
+    if (!isAuthenticated) return <Loading/>
     if (!data) return <div className="text-white p-6 font-[Orbitron]">Loading...</div>
 
     return (
