@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut } from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut, Edit } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
@@ -12,6 +12,7 @@ import TrainBattleModal from '../components/TrainBattleModal'
 import { useAuth } from "../utils/AuthContext"
 import Loading from "./ui/loading"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function HomeGameInterface() {
   const { user, logout, token } = useAuth()
@@ -214,11 +215,17 @@ export default function HomeGameInterface() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  if(loading){
-    return <Loading/>
+  if (loading) {
+    return <Loading />
   }
 
   if (buildingsData.length === 0) return null
+
+  const difficulties = [
+    { level: "Easy", image: "/images/easy.webp", points: +5 },
+    { level: "Medium", image: "/images/medium.webp", points: +2 },
+    { level: "Hard", image: "/images/hard.webp", points: +1 },
+  ]
 
 
 
@@ -325,6 +332,18 @@ export default function HomeGameInterface() {
                   Train
                 </Button>
               </CardContent>
+              <div className="flex justify-around p-1">
+                {difficulties.map((d) => (
+                  <div
+                    key={d.level}
+                    className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full"
+                  >
+                    <Image src={d.image} alt={d.level} width={30} height={30} className="mx-auto mb-2" />
+                    <p className="font-bold text-xs">{d.level}</p>
+                    <p className="text-yellow-400 text-xs">Count: {d.points}</p>
+                  </div>
+                ))}
+              </div>
             </Card>
             <TrainBattleModal showModal={showTrainModal} setShowModal={setShowTrainModal} />
 
@@ -599,8 +618,23 @@ export default function HomeGameInterface() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+            <Link href='base-edit'>
+              <CardContent className="p-4">
+                <Button
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
+                  onClick={() => setShowShopModal(true)}
+                >
+                  <Edit className="w-5 h-5 mr-2" />
+                  Edit
+                </Button>
+              </CardContent>
+              </Link>
+            </Card>
+
+            {/* Quick Actions */}
+            {/* <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-2">
                 <div className="text-xs text-slate-400 uppercase tracking-wide">Quick Actions</div>
                 <div className="grid grid-cols-2 gap-2">
@@ -634,7 +668,7 @@ export default function HomeGameInterface() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
         {/* Shop Modal */}
@@ -646,7 +680,7 @@ export default function HomeGameInterface() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2 mt-4">
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
