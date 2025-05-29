@@ -351,6 +351,7 @@ export default function HomeGameInterface() {
                 <Button
                   variant="outline"
                   className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-red-500/30 font-bold"
+                  onClick={() => router.push('/attack')}
                 >
                   <Sword className="w-4 h-4 mr-2" />
                   Attack
