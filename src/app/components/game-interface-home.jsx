@@ -18,6 +18,7 @@ import {
   LogOut,
   Edit,
   Group,
+  Brain,
 } from "lucide-react";
 import Link from "next/link";
 import BattleLogsModal from "./BattleLogsModal";
@@ -29,6 +30,7 @@ import Loading from "./ui/loading";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import TrophyBanner from "./TrophyBanner";
+import GuideModal from '../components/GuideModal'
 
 export default function HomeGameInterface() {
   const { user, logout, token } = useAuth();
@@ -48,7 +50,7 @@ export default function HomeGameInterface() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [showTrophyBanner, setShowTrophyBanner] = useState(false);
-
+  const [guideModal, setGuideModal] = useState(false)
   const gridSize = 10;
   const totalCells = gridSize * gridSize;
 
@@ -341,9 +343,20 @@ export default function HomeGameInterface() {
                 </div>
               )}
             </div>
+           
           </div>
+          <div>
+            <Button
+                size="lg"
+                onClick={() => setGuideModal(true)}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
+              >
+                <HelpCircle className="w-5 h-5 mr-1" />
+                Guide
+              </Button>
+            </div>
         </div>
-
+        <GuideModal isOpen={guideModal} onClose={() => setGuideModal(false)} />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Sidebar */}
           <div className="lg:col-span-2 space-y-4">
@@ -913,7 +926,7 @@ export default function HomeGameInterface() {
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 mt-2 relative ${
                     item.purchased ? "border-green-500/50 bg-green-900/20" : ""
                   }`}
                 >
