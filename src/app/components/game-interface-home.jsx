@@ -13,6 +13,7 @@ import { useAuth } from "../utils/AuthContext"
 import Loading from "./ui/loading"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import TrophyBanner from "./TrophyBanner"
 
 export default function HomeGameInterface() {
   const { user, logout, token } = useAuth()
@@ -30,6 +31,8 @@ export default function HomeGameInterface() {
   const [gold, setGold] = useState(0)
   const [elixir, setElixir] = useState(0)
   const [loading, setLoading] = useState(false);
+  const router = useRouter()
+  const [showTrophyBanner, setShowTrophyBanner] = useState(false)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
@@ -134,8 +137,7 @@ export default function HomeGameInterface() {
         .map(() => Array(gridSize).fill(null))
 
       // Place buildings at their correct positions
-      data.base.forEach((building) => {
-        if (building.name === "Study Hall") return; // Skip "Study Hall"
+      data.base.forEach((building) => { 
         const [row, col] = building.index;
         tempGrid[row][col] = {
           name: building.name,
@@ -299,6 +301,7 @@ export default function HomeGameInterface() {
                 <Button
                   variant="outline"
                   className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold"
+                  onClick={() => setShowTrophyBanner(true)}
                 >
                   <div className="flex gap-2 items-center">
                     <Trophy className="w-4 h-4" />
@@ -520,7 +523,7 @@ export default function HomeGameInterface() {
                                           })
                                           if (building.name === 'Revision Lab') router.push('/notes')
                                           else if (building.name === 'Strategy Lab') router.push('/strategy')
-                                          else if (building.name === 'Live Arena') router.push('/video')
+                                          else if (building.name === 'Live Arena' || building.name === 'Lecture Hall') router.push('/video')
                                           else if (building.name === 'DPP Tower') router.push('/test')
                                           else if (building.name === 'Mock Tower') router.push('/test/instructions')
                                         }}
@@ -625,7 +628,6 @@ export default function HomeGameInterface() {
                 <Button
                   size="lg"
                   className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
-                  onClick={() => setShowShopModal(true)}
                 >
                   <Edit className="w-5 h-5 mr-2" />
                   Edit
@@ -784,6 +786,17 @@ export default function HomeGameInterface() {
                 </Card>
               ))}
             </div>
+          </DialogContent>
+        </Dialog>
+        {/* Trophy Banner Dialog */}
+        <Dialog open={showTrophyBanner} onOpenChange={setShowTrophyBanner}>
+          <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-purple-400 mb-2 text-center">
+                🏆 Trophy Medals
+              </DialogTitle>
+            </DialogHeader>
+            <TrophyBanner />
           </DialogContent>
         </Dialog>
       </div>
