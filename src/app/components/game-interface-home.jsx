@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut, Edit } from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Shield, Dumbbell, LogOut, Edit } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Badge } from "./ui/badge"
-import TrainBattleModal from '../components/TrainBattleModal'
+import TrainBattleModal from "../components/TrainBattleModal"
 import { useAuth } from "../utils/AuthContext"
 import Loading from "./ui/loading"
 import { useRouter } from "next/navigation"
@@ -21,7 +21,6 @@ export default function HomeGameInterface() {
   const [hoveredCell, setHoveredCell] = useState(null)
   const [trophies, setTrophies] = useState(0)
   const hoverTimeoutRef = useRef(null)
-  const isHoveringPopupRef = useRef(false)
   const [buildingsData, setBuildingsData] = useState([])
   const [challengeCounts, setChallengeCounts] = useState({})
   const [showTrainModal, setShowTrainModal] = useState(false)
@@ -30,9 +29,10 @@ export default function HomeGameInterface() {
   const profileRef = useRef(null)
   const [gold, setGold] = useState(0)
   const [elixir, setElixir] = useState(0)
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const [showTrophyBanner, setShowTrophyBanner] = useState(false)
+  const isHoveringPopupRef = useRef(false)
 
   const gridSize = 10
   const totalCells = gridSize * gridSize
@@ -137,8 +137,8 @@ export default function HomeGameInterface() {
         .map(() => Array(gridSize).fill(null))
 
       // Place buildings at their correct positions
-      data.base.forEach((building) => { 
-        const [row, col] = building.index;
+      data.base.forEach((building) => {
+        const [row, col] = building.index
         tempGrid[row][col] = {
           name: building.name,
           image: building.imageURL,
@@ -146,9 +146,9 @@ export default function HomeGameInterface() {
           health: building.health,
           assetId: building.assetId,
           _id: building._id,
-        };
-      });
-
+          costToUpgrade: building.costToUpgrade,
+        }
+      })
 
       setBuildingsData(tempGrid)
       setLoading(false)
@@ -171,6 +171,30 @@ export default function HomeGameInterface() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    // Load challenge counts from localStorage when component mounts
+    const savedChallengeCounts = localStorage.getItem("challengeCounts")
+    if (savedChallengeCounts) {
+      try {
+        setChallengeCounts(JSON.parse(savedChallengeCounts))
+      } catch (error) {
+        console.error("Error parsing saved challenge counts:", error)
+      }
+    }
+    const savedGold = localStorage.getItem("userGold")
+    if (savedGold) {
+      setGold(JSON.parse(savedGold))
+    }
+  }, [])
+
+  // Add this useEffect to save challenge counts whenever they change
+  useEffect(() => {
+    // Save challenge counts to localStorage whenever they change
+    if (Object.keys(challengeCounts).length > 0) {
+      localStorage.setItem("challengeCounts", JSON.stringify(challengeCounts))
+    }
+  }, [challengeCounts])
 
   const clearHoverTimeout = () => {
     if (hoverTimeoutRef.current) {
@@ -213,8 +237,8 @@ export default function HomeGameInterface() {
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
   if (loading) {
@@ -228,8 +252,6 @@ export default function HomeGameInterface() {
     { level: "Medium", image: "/images/medium.webp", points: +2 },
     { level: "Hard", image: "/images/hard.webp", points: +1 },
   ]
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -273,23 +295,6 @@ export default function HomeGameInterface() {
                 </div>
               )}
             </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                <Play className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -317,7 +322,7 @@ export default function HomeGameInterface() {
                 <Button
                   variant="outline"
                   className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-red-500/30 font-bold"
-                  onClick={() => router.push('/attack')}
+                  onClick={() => router.push("/attack")}
                 >
                   <Sword className="w-4 h-4 mr-2" />
                   Attack
@@ -342,7 +347,13 @@ export default function HomeGameInterface() {
                     key={d.level}
                     className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full"
                   >
-                    <Image src={d.image} alt={d.level} width={30} height={30} className="mx-auto mb-2" />
+                    <Image
+                      src={d.image || "/placeholder.svg"}
+                      alt={d.level}
+                      width={30}
+                      height={30}
+                      className="mx-auto mb-2"
+                    />
                     <p className="font-bold text-xs">{d.level}</p>
                     <p className="text-yellow-400 text-xs">Count: {d.points}</p>
                   </div>
@@ -408,13 +419,14 @@ export default function HomeGameInterface() {
                         key={i}
                         className={`
                           aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
-                          ${isTopLeftTownHall
-                            ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
-                            : selectedCell === i
-                              ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
-                              : hoveredCell === i
-                                ? "bg-slate-700/50 border-slate-500 cursor-pointer"
-                                : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
+                          ${
+                            isTopLeftTownHall
+                              ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
+                              : selectedCell === i
+                                ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
+                                : hoveredCell === i
+                                  ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                                  : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
                         style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
@@ -460,6 +472,7 @@ export default function HomeGameInterface() {
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         // Add gold collection logic here
+                                        setGold(gold + 10)
                                         console.log("Collecting gold from PW Mine")
                                       }}
                                     >
@@ -472,6 +485,7 @@ export default function HomeGameInterface() {
                                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-purple-500/25 border border-purple-400/30"
                                       onClick={(e) => {
                                         e.stopPropagation()
+                                        setElixir(elixir + 10)
                                         // Add elixir collection logic here
                                         console.log("Collecting elixir from Elixir Collector")
                                       }}
@@ -503,7 +517,7 @@ export default function HomeGameInterface() {
                                         <div className="flex justify-between text-xs">
                                           <span className="text-slate-400">Upgrade Level</span>
                                           <span className="text-yellow-400 font-medium">
-                                            {challengeCounts[building.assetId] || 0}/10
+                                            {challengeCounts[building.assetId] || 0}/3
                                           </span>
                                         </div>
                                       </div>
@@ -511,25 +525,90 @@ export default function HomeGameInterface() {
                                       <Button
                                         size="sm"
                                         className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
-                                        onClick={(e) => {
+                                        onClick={async (e) => {
                                           e.stopPropagation()
                                           const assetId = building.assetId
+                                          const userId = user._id
+
+                                          // Check if user has sufficient gold
+                                          if (gold < building.costToUpgrade) {
+                                            alert(`Insufficient gold! You need ${building.costToUpgrade} gold to accept this challenge.`)
+                                            return
+                                          }
+
+                                          // Deduct gold and update state
+                                          setGold(gold - building.costToUpgrade)
+                                          
+                                          // Save gold to localStorage
+                                          localStorage.setItem('userGold', JSON.stringify(gold - building.costToUpgrade))
+
                                           setChallengeCounts((prev) => {
                                             const currentCount = prev[assetId] || 0
                                             const newCount = currentCount + 1
-                                            return newCount >= 10
-                                              ? { ...prev, [assetId]: 0 }
-                                              : { ...prev, [assetId]: newCount }
+
+                                            // Check if we've reached the upgrade threshold
+                                            if (newCount >= 3 && assetId) {
+                                              // Make API call to upgrade the structure
+                                              fetch(`/api/resources/${userId}/upgrade`, {
+                                                method: "PUT",
+                                                headers: {
+                                                  "Content-Type": "application/json",
+                                                  Authorization: `Bearer ${token}`,
+                                                },
+                                                body: JSON.stringify({
+                                                  assetId: assetId,
+                                                }),
+                                              })
+                                                .then((response) => {
+                                                  if (response.ok) {
+                                                    console.log(`Structure ${building.name} upgraded successfully!`)
+                                                    // Reset the challenge count for this structure in localStorage
+                                                    const updatedCounts = { ...prev, [assetId]: 0 }
+                                                    localStorage.setItem(
+                                                      "challengeCounts",
+                                                      JSON.stringify(updatedCounts),
+                                                    )
+                                                    // Refresh base data after upgrade
+                                                    // fetchBaseData()
+                                                  } else {
+                                                    console.error("Failed to upgrade structure")
+                                                    // Revert the count if upgrade failed
+                                                    const revertedCounts = { ...prev, [assetId]: currentCount }
+                                                    localStorage.setItem(
+                                                      "challengeCounts",
+                                                      JSON.stringify(revertedCounts),
+                                                    )
+                                                    setChallengeCounts(revertedCounts)
+                                                  }
+                                                })
+                                                .catch((error) => {
+                                                  console.error("Error upgrading structure:", error)
+                                                  // Revert the count if upgrade failed
+                                                  const revertedCounts = { ...prev, [assetId]: currentCount }
+                                                  localStorage.setItem(
+                                                    "challengeCounts",
+                                                    JSON.stringify(revertedCounts),
+                                                  )
+                                                  setChallengeCounts(revertedCounts)
+                                                })
+
+                                              return { ...prev, [assetId]: 0 } // Reset to 0 immediately for UI feedback
+                                            } else {
+                                              return { ...prev, [assetId]: newCount }
+                                            }
                                           })
-                                          if (building.name === 'Revision Lab') router.push('/notes')
-                                          else if (building.name === 'Strategy Lab') router.push('/strategy')
-                                          else if (building.name === 'Live Arena' || building.name === 'Lecture Hall') router.push('/video')
-                                          else if (building.name === 'DPP Tower') router.push('/test')
-                                          else if (building.name === 'Mock Tower') router.push('/test/instructions')
+
+                                          // Navigate to appropriate page based on building type
+                                          if (building.name === "Revision Lab") router.push("/notes")
+                                          else if (building.name === "Strategy Lab") router.push("/strategy")
+                                          else if (building.name === "Live Arena" || building.name === "Lecture Hall")
+                                            router.push("/video")
+                                          else if (building.name === "DPP Tower") router.push("/test")
+                                          else if (building.name === "Mock Tower") router.push("/test/instructions")
                                         }}
                                       >
                                         <Shield className="w-3 h-3 mr-1" />
-                                        Accept Challenge
+                                        Accept Challenge ({building.costToUpgrade})
                                       </Button>
                                     </>
                                   )}
@@ -623,16 +702,16 @@ export default function HomeGameInterface() {
             </Card>
 
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-            <Link href='base-edit'>
-              <CardContent className="p-4">
-                <Button
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
-                >
-                  <Edit className="w-5 h-5 mr-2" />
-                  Edit
-                </Button>
-              </CardContent>
+              <Link href="base-edit">
+                <CardContent className="p-4">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
+                  >
+                    <Edit className="w-5 h-5 mr-2" />
+                    Edit
+                  </Button>
+                </CardContent>
               </Link>
             </Card>
 
@@ -687,8 +766,9 @@ export default function HomeGameInterface() {
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${item.purchased ? "border-green-500/50 bg-green-900/20" : ""
-                    }`}
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
+                    item.purchased ? "border-green-500/50 bg-green-900/20" : ""
+                  }`}
                 >
                   {item.discount && (
                     <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold">
