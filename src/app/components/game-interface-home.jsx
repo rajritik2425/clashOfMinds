@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Badge } from "./ui/badge"
 import TrainBattleModal from '../components/TrainBattleModal'
 import { useAuth } from "../utils/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function HomeGameInterface() {
-  const { user, logout, loading } = useAuth()
+  const { user, logout, loading, token } = useAuth()
   const [selectedCell, setSelectedCell] = useState(null)
   const [hoveredCell, setHoveredCell] = useState(null)
   const [trophies, setTrophies] = useState(0)
@@ -26,7 +27,7 @@ export default function HomeGameInterface() {
   const profileRef = useRef(null)
   const [gold, setGold] = useState(0)
   const [elixir, setElixir] = useState(0)
-
+  const router = useRouter()
   const gridSize = 10
   const totalCells = gridSize * gridSize
 
@@ -130,7 +131,8 @@ export default function HomeGameInterface() {
 
       // Place buildings at their correct positions
       data.base.forEach((building) => {
-        const [row, col] = building.index
+        if (building.name === "Study Hall") return; // Skip "Study Hall"
+        const [row, col] = building.index;
         tempGrid[row][col] = {
           name: building.name,
           image: building.imageURL,
@@ -138,8 +140,9 @@ export default function HomeGameInterface() {
           health: building.health,
           assetId: building.assetId,
           _id: building._id,
-        }
-      })
+        };
+      });
+
 
       setBuildingsData(tempGrid)
     } catch (error) {
@@ -426,14 +429,13 @@ export default function HomeGameInterface() {
                         key={i}
                         className={`
                           aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
-                          ${
-                            isTopLeftTownHall
-                              ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
-                              : selectedCell === i
-                                ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
-                                : hoveredCell === i
-                                  ? "bg-slate-700/50 border-slate-500 cursor-pointer"
-                                  : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
+                          ${isTopLeftTownHall
+                            ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
+                            : selectedCell === i
+                              ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
+                              : hoveredCell === i
+                                ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                                : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
                         style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
@@ -540,6 +542,11 @@ export default function HomeGameInterface() {
                                               ? { ...prev, [assetId]: 0 }
                                               : { ...prev, [assetId]: newCount }
                                           })
+                                          if (building.name === 'Revision Lab') router.push('/notes')
+                                          else if (building.name === 'Strategy Lab') router.push('/strategy')
+                                          else if (building.name === 'Live Arena') router.push('/video')
+                                          else if (building.name === 'DPP Tower') router.push('/test')
+                                          else if (building.name === 'Mock Tower') router.push('/test/instructions')
                                         }}
                                       >
                                         <Shield className="w-3 h-3 mr-1" />
@@ -687,9 +694,8 @@ export default function HomeGameInterface() {
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
-                    item.purchased ? "border-green-500/50 bg-green-900/20" : ""
-                  }`}
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${item.purchased ? "border-green-500/50 bg-green-900/20" : ""
+                    }`}
                 >
                   {item.discount && (
                     <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold">
