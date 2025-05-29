@@ -7,6 +7,7 @@ import { Badge } from "../../components/ui/badge"
 import { Castle, Shield, Zap, Coins, Sword, Home, Factory, TreePine, Mountain, Flame, RotateCcw, Save, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../utils/AuthContext"
+import Loading from "../../components/ui/loading"
 
 export default function BaseBuilder() {
   const router = useRouter()
@@ -32,8 +33,7 @@ export default function BaseBuilder() {
 
   const fetchBaseData = async () => {
     if (!isAuthenticated || !user || !token) {
-      router.push('/login')
-      return
+      return <Loading/>
     }
 
     try {

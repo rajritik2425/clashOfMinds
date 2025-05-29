@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../../utils/AuthContext"
+import Loading from "../../components/ui/loading"
 
 const API_BASE_URL = "https://clash-of-minds.onrender.com/api"
 
@@ -145,9 +146,7 @@ export default function AttackPage() {
   const [destructionEffects, setDestructionEffects] = useState([])
   const router = useRouter();
   const {isAuthenticated, token} = useAuth();
-  if(!isAuthenticated){
-    router.push('/login');
-  }
+  
 
   // Helper function to check if a structure is accessible (not surrounded)
   const isStructureAccessible = (cellIndex, base) => {
@@ -548,6 +547,10 @@ export default function AttackPage() {
       clearInterval(interval)
     }
   }, [])
+
+  if(!isAuthenticated){
+    return <Loading/>
+  }
 
   if (gameState === "searching") {
     return (

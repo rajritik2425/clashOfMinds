@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   // Function to fetch user data
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch('api/user/me', {
+      const response = await fetch('/api/user/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -34,23 +34,23 @@ export function AuthProvider({ children }) {
   // Check if user is logged in on initial load
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        setToken(storedToken); // ✅ Always keep this in sync
         try {
-          setToken(token);
-          const userData = await fetchUserData(token);
+          const userData = await fetchUserData(storedToken);
           setUser(userData);
           setIsAuthenticated(true);
         } catch (error) {
-          // If token is invalid, clear storage
-          localStorage.removeItem('token');
-          setUser(null);
+          console.error("Token may be invalid or API failed");
           setIsAuthenticated(false);
+          setUser(null);
         }
       }
     };
     checkAuth();
   }, []);
+  
 
   const login = async (userData, token) => {
     try {

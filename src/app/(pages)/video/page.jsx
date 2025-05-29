@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { useAuth } from '../../utils/AuthContext';
 import { useRouter } from 'next/navigation';
+import Loading from '../../components/ui/loading';
 
 // JSON data with video information
 const videoData = [
@@ -102,10 +103,7 @@ export default function WatchPage() {
   });
   const router = useRouter();
   const {isAuthenticated} = useAuth();
-  if(!isAuthenticated){
-    router.push('/login');
-  }
-
+  
   // Calculate stats
   useEffect(() => {
     const total = videos.length;
@@ -180,6 +178,11 @@ export default function WatchPage() {
       return null
     }
   }
+
+  if(!isAuthenticated){
+    return <Loading/>
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-4 sm:p-6 text-white">
