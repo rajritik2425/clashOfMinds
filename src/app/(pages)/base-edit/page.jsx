@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "../../components/ui/button"
@@ -26,47 +26,29 @@ export default function BaseBuilder() {
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await fetch(`/api/resources/${user._id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       // Initialize empty 10x10 grid (100 cells)
-      const newGrid = Array.from({ length: 100 }, (_, i) => ({ id: i, structure: null }))
-      const positionsMap = {}
+      const newGrid = Array.from({ length: 100 }, (_, i) => ({
+        id: i,
+        structure: null,
+      }));
+      const positionsMap = {};
 
       // Create inventory from unique structures
-      const structureTypes = {}
-
-      // Place town hall at the center (cells 44, 45, 54, 55 in a 10x10 grid)
-      const townHallCells = [44, 45, 54, 55]
-      const townHallStructure = {
-        id: "town-hall",
-        name: "Town Hall",
-        icon: Castle,
-        color: "from-purple-600 to-purple-800",
-        type: "building",
-        imageURL: "/TOWN_HALL_BASE.png",
-        level: 1,
-        health: 100,
-        _id: "town-hall",
-        isTownHall: true,
-      }
-
-      // Place town hall in top-left cell of the 2x2 area
-      newGrid[44].structure = townHallStructure
+      const structureTypes = {};
 
       // Place buildings at their correct positions and track original positions
       data.base.forEach((building) => {
-        const [row, col] = building.index
-        const cellId = row * 10 + col // Convert to linear index for 10x10 grid
-
-        // Skip if this cell is part of the town hall area
-        if (townHallCells.includes(cellId)) return
+        const [row, col] = building.index;
+        const cellId = row * 10 + col; // Convert to linear index for 10x10 grid
 
         const structure = {
           id: building.assetId,
@@ -78,57 +60,60 @@ export default function BaseBuilder() {
           level: building.level,
           health: building.health,
           _id: building._id,
-        }
+        };
 
-        newGrid[cellId].structure = structure
-        positionsMap[building._id] = cellId
+        newGrid[cellId].structure = structure;
+        positionsMap[building._id] = cellId;
 
-        // Add to structure types for inventory
         if (!structureTypes[building.assetId]) {
           structureTypes[building.assetId] = {
             structure: structure,
             count: 0,
-          }
+          };
         }
       })
 
       // Create inventory with 0 count (since all are placed)
-      const inventoryData = Object.values(structureTypes)
+      const inventoryData = Object.values(structureTypes);
 
-      setGrid(newGrid)
-      setInventory(inventoryData)
-      setOriginalPositions(positionsMap)
-      setLoading(false)
+      setGrid(newGrid);
+      setInventory(inventoryData);
+      setOriginalPositions(positionsMap);
+      setLoading(false);
     } catch (error) {
-      console.error("Error fetching base data:", error)
-      setLoading(false)
+      console.error("Error fetching base data:", error);
+      setLoading(false);
     }
   }
 
   const saveBaseLayout = async () => {
     if (!isAuthenticated || !user || !token) {
-      router.push("/login")
-      return
+      router.push("/login");
+      return;
     }
 
     try {
-      const positions = []
+      const positions = [];
 
       grid.forEach((cell, index) => {
-        if (cell.structure && cell.structure.id && !cell.structure.isTownHall) {
-          const row = Math.floor(index / 10)
-          const col = index % 10
+        if (cell.structure && cell.structure.id) {
+          const row = Math.floor(index / 10);
+          const col = index % 10;
+          const originalPosition = originalPositions[cell.structure.id];
 
-          positions.push({
-            resourceId: cell.structure.id,
-            newIndex: [row, col],
-          })
+          // Only include if position has changed
+          if (originalPosition !== index) {
+            positions.push({
+              resourceId: cell.structure.id,
+              newIndex: [row, col],
+            });
+          }
         }
-      })
+      });
 
       if (positions.length === 0) {
-        alert("No structures to save")
-        return
+        alert("No changes to save");
+        return;
       }
 
       const response = await fetch(`/api/resources/${user._id}/positions`, {
@@ -138,26 +123,26 @@ export default function BaseBuilder() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ positions }),
-      })
+      });
 
       if (response.ok) {
         // Update original positions
-        const newOriginalPositions = {}
+        const newOriginalPositions = {};
         grid.forEach((cell, index) => {
           if (cell.structure && cell.structure._id) {
-            newOriginalPositions[cell.structure._id] = index
+            newOriginalPositions[cell.structure._id] = index;
           }
-        })
-        setOriginalPositions(newOriginalPositions)
-        router.push("/")
+        });
+        setOriginalPositions(newOriginalPositions);
+        router.push("/");
       } else {
-        alert("Failed to save base layout")
+        alert("Failed to save base layout");
       }
     } catch (error) {
-      console.error("Error saving base layout:", error)
-      alert("Error saving base layout")
+      console.error("Error saving base layout:", error);
+      alert("Error saving base layout");
     }
-  }
+  };
 
   useEffect(() => {
     if (isAuthenticated && user && token) {
@@ -170,137 +155,129 @@ export default function BaseBuilder() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-white text-xl">Loading base data...</div>
       </div>
-    )
+    );
   }
 
   const handleDragStart = (structure, fromGrid) => {
-    // Prevent dragging town hall
-    if (structure.isTownHall) return
-
-    setDraggedStructure(structure)
+    setDraggedStructure(structure);
     if (fromGrid !== undefined) {
-      setDraggedFromGrid(fromGrid)
+      setDraggedFromGrid(fromGrid);
     }
-  }
+  };
 
   const handleDragEnd = () => {
-    setDraggedStructure(null)
-    setDraggedFromGrid(null)
-    dragCounter.current = 0
-  }
+    setDraggedStructure(null);
+    setDraggedFromGrid(null);
+    dragCounter.current = 0;
+  };
 
   const handleDragOver = (e) => {
-    e.preventDefault()
-  }
+    e.preventDefault();
+  };
 
   const handleDragEnter = (e) => {
-    e.preventDefault()
-    dragCounter.current++
-  }
+    e.preventDefault();
+    dragCounter.current++;
+  };
 
   const handleDragLeave = () => {
-    dragCounter.current--
-  }
+    dragCounter.current--;
+  };
 
   const handleDropOnGrid = (cellId) => {
-    if (!draggedStructure) return
-
-    // Define town hall cells (center of 10x10 grid)
-    const townHallCells = [44, 45, 54, 55]
-
-    // Prevent dropping on town hall cells
-    if (townHallCells.includes(cellId)) return
-
-    const newGrid = [...grid]
-    const targetCell = newGrid[cellId]
+    const newGrid = [...grid];
+    const targetCell = newGrid[cellId];
 
     // Dropping from inventory
     if (draggedFromGrid === null) {
-      const inventoryItem = inventory.find((item) => item.structure.id === draggedStructure.id)
-      if (!inventoryItem || inventoryItem.count <= 0) return
+      const inventoryItem = inventory.find(
+        (item) => item.structure.id === draggedStructure.id
+      );
+      if (!inventoryItem || inventoryItem.count <= 0) return;
 
       if (targetCell.structure) {
         setInventory((prev) =>
           prev.map((item) =>
-            item.structure.id === targetCell.structure.id ? { ...item, count: item.count + 1 } : item,
-          ),
-        )
+            item.structure.id === targetCell.structure.id
+              ? { ...item, count: item.count + 1 }
+              : item
+          )
+        );
       }
 
-      targetCell.structure = draggedStructure
+      targetCell.structure = draggedStructure;
 
       setInventory((prev) =>
-        prev.map((item) => (item.structure.id === draggedStructure.id ? { ...item, count: item.count - 1 } : item)),
-      )
+        prev.map((item) =>
+          item.structure.id === draggedStructure.id
+            ? { ...item, count: item.count - 1 }
+            : item
+        )
+      );
     } else {
-      // Prevent dragging town hall
-      if (draggedStructure.isTownHall) return
-
-      const sourceCell = newGrid[draggedFromGrid]
+      const sourceCell = newGrid[draggedFromGrid];
 
       if (targetCell.structure) {
-        sourceCell.structure = targetCell.structure
+        sourceCell.structure = targetCell.structure;
       } else {
-        sourceCell.structure = null
+        sourceCell.structure = null;
       }
 
-      targetCell.structure = draggedStructure
+      targetCell.structure = draggedStructure;
     }
 
-    setGrid(newGrid)
-  }
+    setGrid(newGrid);
+  };
 
-  // const handleDropOnInventory = () => {
-  //   if (!draggedStructure || draggedFromGrid === null) return
+  const handleDropOnInventory = () => {
+    if (!draggedStructure || draggedFromGrid === null) return;
 
-  //   const newGrid = [...grid]
-  //   newGrid[draggedFromGrid].structure = null
-  //   setGrid(newGrid)
+    const newGrid = [...grid];
+    newGrid[draggedFromGrid].structure = null;
+    setGrid(newGrid);
 
-  //   setInventory((prev) =>
-  //     prev.map((item) => (item.structure.id === draggedStructure.id ? { ...item, count: item.count + 1 } : item)),
-  //   )
-  // }
+    setInventory((prev) =>
+      prev.map((item) =>
+        item.structure.id === draggedStructure.id
+          ? { ...item, count: item.count + 1 }
+          : item
+      )
+    );
+  };
 
-  // const clearGrid = () => {
-  //   const structureCounts = {}
-  //   grid.forEach((cell) => {
-  //     if (cell.structure && !cell.structure.isTownHall) {
-  //       structureCounts[cell.structure.id] = (structureCounts[cell.structure.id] || 0) + 1
-  //     }
-  //   })
+  const clearGrid = () => {
+    const structureCounts = {};
+    grid.forEach((cell) => {
+      if (cell.structure) {
+        structureCounts[cell.structure.id] =
+          (structureCounts[cell.structure.id] || 0) + 1;
+      }
+    });
 
-  //   setInventory((prev) =>
-  //     prev.map((item) => ({
-  //       ...item,
-  //       count: item.count + (structureCounts[item.structure.id] || 0),
-  //     })),
-  //   )
+    setInventory((prev) =>
+      prev.map((item) => ({
+        ...item,
+        count: item.count + (structureCounts[item.structure.id] || 0),
+      }))
+    );
 
-  //   // Clear grid but preserve town hall
-  //   setGrid(
-  //     grid.map((cell) => {
-  //       if (cell.structure && cell.structure.isTownHall) {
-  //         return cell // Keep town hall
-  //       }
-  //       return { ...cell, structure: null } // Clear other cells
-  //     }),
-  //   )
-  // }
+    setGrid(grid.map((cell) => ({ ...cell, structure: null })));
+  };
 
-  // const removeFromGrid = (cellId) => {
-  //   const cell = grid[cellId]
-  //   if (!cell.structure) return
+  const removeFromGrid = (cellId) => {
+    const cell = grid[cellId];
+    if (!cell.structure) return;
 
-  //   // Prevent removing town hall
-  //   if (cell.structure.isTownHall) return
+    setInventory((prev) =>
+      prev.map((item) =>
+        item.structure.id === cell.structure.id
+          ? { ...item, count: item.count + 1 }
+          : item
+      )
+    );
 
-  //   setInventory((prev) =>
-  //     prev.map((item) => (item.structure.id === cell.structure.id ? { ...item, count: item.count + 1 } : item)),
-  //   )
-
-  //   setGrid(grid.map((c, i) => (i === cellId ? { ...c, structure: null } : c)))
-  // }
+    setGrid(grid.map((c, i) => (i === cellId ? { ...c, structure: null } : c)));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -312,8 +289,7 @@ export default function BaseBuilder() {
         <div className="flex justify-between items-center mb-6">
           <Button
             onClick={() => router.push("/")}
-            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/25"
-          >
+            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/25">
             <X className="w-5 h-5 mr-2" /> Exit Edit Mode
           </Button>
 
@@ -321,8 +297,7 @@ export default function BaseBuilder() {
             {/* <Button
               onClick={clearGrid}
               variant="outline"
-              className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 font-bold px-6 py-3"
-            >
+              className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 font-bold px-6 py-3">
               <RotateCcw className="w-5 h-5 mr-2" /> Clear All
             </Button> */}
 
@@ -337,70 +312,50 @@ export default function BaseBuilder() {
 
         {/* Main Grid */}
         <Card className="bg-slate-800/30 border-slate-700 backdrop-blur-sm mb-6">
-          <CardContent className="p-6">
-            <div className="grid grid-cols-10 gap-1 max-w-4xl mx-auto">
-              {grid.map((cell) => {
-                // Check if this is a town hall cell
-                const isTownHallCell = cell.structure && cell.structure.isTownHall
-                const isTownHallArea = [44, 45, 54, 55].includes(cell.id)
-
-                // Only render the main town hall cell (top-left of the 2x2 area)
-                if (isTownHallArea && cell.id !== 44) {
-                  return null
-                }
-
+          <CardContent className="py-6">
+            <div className="grid grid-cols-10 gap-1 mx-auto">
+              {grid.map((cell, index) => {
+                console.log(cell);
                 return (
                   <div
-                    key={cell.id}
-                    className={`
-                      ${cell.id === 44 ? "col-span-2 row-span-2" : ""}
-                      aspect-square border-2 
-                      ${isTownHallArea ? "border-amber-600/50" : "border-slate-600/50"} 
-                      rounded-lg 
-                      ${isTownHallArea ? "bg-slate-800/50" : "bg-slate-900/30 hover:bg-slate-800/50"} 
-                      transition-all duration-200 relative group cursor-pointer
-                    `}
-                    style={cell.id === 44 ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
-                    onDragOver={!isTownHallArea ? handleDragOver : undefined}
-                    onDragEnter={!isTownHallArea ? handleDragEnter : undefined}
-                    onDragLeave={!isTownHallArea ? handleDragLeave : undefined}
+                    key={index}
+                    className={`border p-2 aspect-square border-slate-600/50 rounded-lg bg-slate-900/30 hover:bg-slate-800/50 `}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
                     onDrop={(e) => {
-                      if (isTownHallArea) return
-                      e.preventDefault()
-                      handleDropOnGrid(cell.id)
-                    }}
-                  >
+                      e.preventDefault();
+                      handleDropOnGrid(cell.id);
+                    }}>
                     {cell.structure && (
                       <div
-                        draggable={!isTownHallCell}
-                        onDragStart={() => !isTownHallCell && handleDragStart(cell.structure, cell.id)}
+                        draggable={true}
+                        onDragStart={(e) => {
+                          handleDragStart(cell.structure, index);
+                        }}
                         onDragEnd={handleDragEnd}
-                        className={`w-full h-full rounded-lg bg-gradient-to-br ${cell.structure.color} flex items-center justify-center ${!isTownHallCell ? "cursor-move" : "cursor-not-allowed"} shadow-lg relative`}
-                      >
+                        className="group w-full h-full rounded-lg flex items-center justify-center relative">
                         {cell.structure.imageURL ? (
                           <img
-                            src={cell.structure.imageURL || "/placeholder.svg"}
+                            src={cell.structure.imageURL}
                             alt={cell.structure.name}
                             className="w-full h-full object-cover rounded-lg"
                           />
                         ) : (
                           <cell.structure.icon className="w-6 h-6 text-white" />
                         )}
-                        {/* {!isTownHallCell && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              removeFromGrid(cell.id)
-                            }}
-                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3 text-white" />
-                          </button>
-                        )} */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromGrid(index);
+                          }}
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <X className="w-3 h-3 text-white" />
+                        </button>
                       </div>
                     )}
                   </div>
-                )
+                );
               })}
             </div>
           </CardContent>
@@ -420,8 +375,7 @@ export default function BaseBuilder() {
                   size="sm"
                   onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                   disabled={currentPage === 0}
-                  className="bg-slate-700/50 border-slate-600 text-slate-300"
-                >
+                  className="bg-slate-700/50 border-slate-600 text-slate-300">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
 
@@ -432,10 +386,11 @@ export default function BaseBuilder() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages - 1}
-                  className="bg-slate-700/50 border-slate-600 text-slate-300"
-                >
+                  className="bg-slate-700/50 border-slate-600 text-slate-300">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -445,10 +400,9 @@ export default function BaseBuilder() {
               className="grid grid-cols-4 gap-4"
               onDragOver={handleDragOver}
               onDrop={(e) => {
-                e.preventDefault()
-                handleDropOnInventory()
-              }}
-            >
+                e.preventDefault();
+                handleDropOnInventory();
+              }}>
               {currentStructures.map((item) => (
                 <div
                   key={item.structure.id}
@@ -456,17 +410,16 @@ export default function BaseBuilder() {
                     item.count > 0
                       ? "border-slate-600 bg-slate-800/50 hover:border-slate-500 cursor-grab"
                       : "border-slate-700 bg-slate-900/50 opacity-50 cursor-not-allowed"
-                  }`}
-                >
+                  }`}>
                   <div
                     draggable={item.count > 0}
-                    onDragStart={() => item.count > 0 && handleDragStart(item.structure)}
+                    onDragStart={() =>
+                      item.count > 0 && handleDragStart(item.structure)
+                    }
                     onDragEnd={handleDragEnd}
-                    className="text-center"
-                  >
+                    className="text-center">
                     <div
-                      className={`w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br ${item.structure.color} flex items-center justify-center shadow-lg overflow-hidden`}
-                    >
+                      className={`w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br ${item.structure.color} flex items-center justify-center shadow-lg overflow-hidden`}>
                       {item.structure.imageURL ? (
                         <img
                           src={item.structure.imageURL || "/placeholder.svg"}
@@ -478,14 +431,17 @@ export default function BaseBuilder() {
                       )}
                     </div>
 
-                    <h4 className="text-sm font-semibold text-slate-300 mb-1">{item.structure.name}</h4>
+                    <h4 className="text-sm font-semibold text-slate-300 mb-1">
+                      {item.structure.name}
+                    </h4>
 
                     <Badge
                       variant="outline"
                       className={`${
-                        item.count > 0 ? "border-cyan-500 text-cyan-400" : "border-slate-600 text-slate-500"
-                      }`}
-                    >
+                        item.count > 0
+                          ? "border-cyan-500 text-cyan-400"
+                          : "border-slate-600 text-slate-500"
+                      }`}>
                       {item.count}
                     </Badge>
                   </div>
@@ -500,5 +456,5 @@ export default function BaseBuilder() {
         </Card> */}
       </div>
     </div>
-  )
+  );
 }
