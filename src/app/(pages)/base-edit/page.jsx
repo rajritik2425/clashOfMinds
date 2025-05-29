@@ -1,47 +1,28 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "../../components/ui/button";
-import { Card, CardContent } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
-import {
-  Castle,
-  RotateCcw,
-  Save,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../../utils/AuthContext";
+import { useState, useRef, useEffect } from "react"
+import { Button } from "../../components/ui/button"
+import { Card, CardContent } from "../../components/ui/card"
+import { Castle, Save, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "../../utils/AuthContext"
+import Loading from "../../components/ui/loading"
 
 export default function BaseBuilder() {
-  const router = useRouter();
-  const { user, token, isAuthenticated } = useAuth();
-  const [grid, setGrid] = useState(() =>
-    Array.from({ length: 100 }, (_, i) => ({ id: i, structure: null }))
-  );
+  const router = useRouter()
+  const { user, token, isAuthenticated } = useAuth()
+  const [grid, setGrid] = useState(() => Array.from({ length: 100 }, (_, i) => ({ id: i, structure: null })))
 
-  const [inventory, setInventory] = useState([]);
-  const [originalPositions, setOriginalPositions] = useState({});
-  const [draggedStructure, setDraggedStructure] = useState(null);
-  const [draggedFromGrid, setDraggedFromGrid] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const dragCounter = useRef(0);
-
-  const structuresPerPage = 4;
-
-  const totalPages = Math.ceil(inventory.length / structuresPerPage);
-  const currentStructures = inventory.slice(
-    currentPage * structuresPerPage,
-    (currentPage + 1) * structuresPerPage
-  );
+  const [inventory, setInventory] = useState([])
+  const [originalPositions, setOriginalPositions] = useState({})
+  const [draggedStructure, setDraggedStructure] = useState(null)
+  const [draggedFromGrid, setDraggedFromGrid] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const dragCounter = useRef(0)
 
   const fetchBaseData = async () => {
     if (!isAuthenticated || !user || !token) {
-      router.push("/login");
-      return;
+      return <Loading />
     }
 
     try {
@@ -90,7 +71,7 @@ export default function BaseBuilder() {
             count: 0,
           };
         }
-      });
+      })
 
       // Create inventory with 0 count (since all are placed)
       const inventoryData = Object.values(structureTypes);
@@ -103,7 +84,7 @@ export default function BaseBuilder() {
       console.error("Error fetching base data:", error);
       setLoading(false);
     }
-  };
+  }
 
   const saveBaseLayout = async () => {
     if (!isAuthenticated || !user || !token) {
@@ -165,9 +146,9 @@ export default function BaseBuilder() {
 
   useEffect(() => {
     if (isAuthenticated && user && token) {
-      fetchBaseData();
+      fetchBaseData()
     }
-  }, [isAuthenticated, user, token]);
+  }, [isAuthenticated, user, token])
 
   if (loading) {
     return (
@@ -313,16 +294,17 @@ export default function BaseBuilder() {
           </Button>
 
           <div className="flex gap-4">
-            <Button
+            {/* <Button
               onClick={clearGrid}
               variant="outline"
               className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 font-bold px-6 py-3">
               <RotateCcw className="w-5 h-5 mr-2" /> Clear All
-            </Button>
+            </Button> */}
 
             <Button
               onClick={saveBaseLayout}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-green-500/25">
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-green-500/25"
+            >
               <Save className="w-5 h-5 mr-2" /> Save
             </Button>
           </div>
@@ -380,7 +362,7 @@ export default function BaseBuilder() {
         </Card>
 
         {/* Structures Inventory */}
-        <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+        {/* <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
@@ -471,7 +453,7 @@ export default function BaseBuilder() {
               Drag structures to the grid above to build your base
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

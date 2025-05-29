@@ -16,6 +16,8 @@ import {
   Play,
   Dumbbell,
   LogOut,
+  Edit,
+  Group,
 } from "lucide-react";
 import Link from "next/link";
 import BattleLogsModal from "./BattleLogsModal";
@@ -23,9 +25,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import TrainBattleModal from "../components/TrainBattleModal";
 import { useAuth } from "../utils/AuthContext";
+import Loading from "./ui/loading";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import TrophyBanner from "./TrophyBanner";
 
 export default function HomeGameInterface() {
-  const { user, logout, loading, token } = useAuth();
+  const { user, logout, token } = useAuth();
   const [selectedCell, setSelectedCell] = useState(null);
   const [hoveredCell, setHoveredCell] = useState(null);
   const [trophies, setTrophies] = useState(0);
@@ -39,6 +45,9 @@ export default function HomeGameInterface() {
   const profileRef = useRef(null);
   const [gold, setGold] = useState(0);
   const [elixir, setElixir] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [showTrophyBanner, setShowTrophyBanner] = useState(false);
 
   const gridSize = 10;
   const totalCells = gridSize * gridSize;
@@ -51,7 +60,7 @@ export default function HomeGameInterface() {
       price: 2999,
       originalPrice: 4999,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "batch",
       discount: 40,
       purchased: true,
@@ -72,7 +81,7 @@ export default function HomeGameInterface() {
       price: 3999,
       originalPrice: 5999,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "batch",
       discount: 33,
       purchased: false,
@@ -92,7 +101,7 @@ export default function HomeGameInterface() {
       price: 1499,
       originalPrice: 2499,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "test-series",
       discount: 40,
       purchased: false,
@@ -110,7 +119,7 @@ export default function HomeGameInterface() {
       price: 1299,
       originalPrice: 1999,
       currency: "rupees",
-      image: "/placeholder.svg?height=64&width=64",
+      image: "/images/thumbnail.jpg",
       category: "test-series",
       discount: 35,
       purchased: true,
@@ -128,6 +137,7 @@ export default function HomeGameInterface() {
 
   const fetchBaseData = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`/api/resources/${user._id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -155,6 +165,7 @@ export default function HomeGameInterface() {
       });
 
       setBuildingsData(tempGrid);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching base data:", error);
     }
@@ -244,39 +255,16 @@ export default function HomeGameInterface() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-            Loading...
-          </h2>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center p-8 bg-slate-800/50 rounded-xl border border-slate-700 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400 mb-4">
-            Not Authenticated
-          </h2>
-          <p className="text-slate-300 mb-6">
-            Please log in to access the game interface.
-          </p>
-          <Link href="/login">
-            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30">
-              Go to Login
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (buildingsData.length === 0) return null;
+
+  const difficulties = [
+    { level: "Easy", image: "/images/easy.webp", points: +5 },
+    { level: "Medium", image: "/images/medium.webp", points: +2 },
+    { level: "Hard", image: "/images/hard.webp", points: +1 },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -345,7 +333,8 @@ export default function HomeGameInterface() {
               <CardContent className="p-4">
                 <Button
                   variant="outline"
-                  className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold">
+                  className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold"
+                  onClick={() => setShowTrophyBanner(true)}>
                   <div className="flex gap-2 items-center">
                     <Trophy className="w-4 h-4" />
                     <span>Trophies</span>
@@ -378,6 +367,23 @@ export default function HomeGameInterface() {
                   Train
                 </Button>
               </CardContent>
+              <div className="flex justify-around p-1">
+                {difficulties.map((d) => (
+                  <div
+                    key={d.level}
+                    className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full">
+                    <Image
+                      src={d.image}
+                      alt={d.level}
+                      width={30}
+                      height={30}
+                      className="mx-auto mb-2"
+                    />
+                    <p className="font-bold text-xs">{d.level}</p>
+                    <p className="text-yellow-400 text-xs">Count: {d.points}</p>
+                  </div>
+                ))}
+              </div>
             </Card>
             <TrainBattleModal
               showModal={showTrainModal}
@@ -646,8 +652,34 @@ export default function HomeGameInterface() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Link href="base-edit">
+                <CardContent className="p-4">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30">
+                    <Edit className="w-5 h-5 mr-2" />
+                    Edit
+                  </Button>
+                </CardContent>
+              </Link>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+              <Link href="clan">
+                <CardContent className="p-4">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30">
+                    <Group className="w-5 h-5 mr-2" />
+                    Clan
+                  </Button>
+                </CardContent>
+              </Link>
+            </Card>
+
+            {/* Quick Actions */}
+            {/* <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-2">
                 <div className="text-xs text-slate-400 uppercase tracking-wide">
                   Quick Actions
@@ -679,7 +711,7 @@ export default function HomeGameInterface() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
         {/* Shop Modal */}
@@ -691,7 +723,7 @@ export default function HomeGameInterface() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-4 mt-6 max-h-96 overflow-y-auto pr-2 ">
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
@@ -811,6 +843,17 @@ export default function HomeGameInterface() {
                 </Card>
               ))}
             </div>
+          </DialogContent>
+        </Dialog>
+        {/* Trophy Banner Dialog */}
+        <Dialog open={showTrophyBanner} onOpenChange={setShowTrophyBanner}>
+          <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-purple-400 mb-2 text-center">
+                🏆 Trophy Medals
+              </DialogTitle>
+            </DialogHeader>
+            <TrophyBanner />
           </DialogContent>
         </Dialog>
       </div>

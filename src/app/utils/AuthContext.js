@@ -7,11 +7,11 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState('');
+  const [loading, setLoading] = useState(true); // 🔥 NEW
 
-  // Function to fetch user data
   const fetchUserData = async (token) => {
     try {
-      const response = await fetch('api/user/me', {
+      const response = await fetch('/api/user/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -31,37 +31,31 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Check if user is logged in on initial load
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        setToken(storedToken);
         try {
-          setToken(token);
-          const userData = await fetchUserData(token);
+          const userData = await fetchUserData(storedToken);
           setUser(userData);
           setIsAuthenticated(true);
         } catch (error) {
-          // If token is invalid, clear storage
-          localStorage.removeItem('token');
-          setUser(null);
+          console.error("Token invalid or API failed");
           setIsAuthenticated(false);
+          setUser(null);
         }
       }
+      setLoading(false); // ✅ Done checking auth
     };
     checkAuth();
   }, []);
 
   const login = async (userData, token) => {
     try {
-      // Fetch user data from API
       const fetchedUserData = await fetchUserData(token);
-      
-      // Store token and user data
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(fetchedUserData));
-      
-      // Update state
       setIsAuthenticated(true);
       setUser(fetchedUserData);
     } catch (error) {
@@ -72,14 +66,9 @@ export function AuthProvider({ children }) {
 
   const signup = async (userData, token) => {
     try {
-      // Fetch user data from API
       const fetchedUserData = await fetchUserData(token);
-      
-      // Store token and user data
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(fetchedUserData));
-      
-      // Update state
       setIsAuthenticated(true);
       setUser(fetchedUserData);
     } catch (error) {
@@ -93,11 +82,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
-    window.location.href = '/login'
+    window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, signup, logout, token }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, signup, logout, token, loading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -109,4 +98,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
