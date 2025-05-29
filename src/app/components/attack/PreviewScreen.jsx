@@ -5,6 +5,7 @@ import { Badge } from "../ui/badge"
 import { Castle, Users, Trophy, Coins, Zap, RotateCcw, Sword } from "lucide-react"
 
 export default function PreviewScreen({ opponent, battleBase, skipOpponent, startBattle }) {
+  const gold = localStorage.getItem("userGold")
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-slate-900/50 to-slate-900"></div>
@@ -80,12 +81,19 @@ export default function PreviewScreen({ opponent, battleBase, skipOpponent, star
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
           <Button
-            onClick={skipOpponent}
+            onClick={() => {
+              if (gold >= 10) {
+                localStorage.setItem("userGold", gold - 10)
+                skipOpponent()
+              } else {
+                alert("You don't have enough gold to skip")
+              }
+            }}
             variant="outline"
             className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 px-8 py-3"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
-            Skip (-1,000 Gold)
+            Skip (-10 Gold)
           </Button>
 
           <Button

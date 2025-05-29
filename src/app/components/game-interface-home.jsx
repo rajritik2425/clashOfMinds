@@ -43,8 +43,8 @@ export default function HomeGameInterface() {
   const [showShopModal, setShowShopModal] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
-  const [gold, setGold] = useState(0);
-  const [elixir, setElixir] = useState(0);
+  const [gold, setGold] = useState(user.gold);
+  const [elixir, setElixir] = useState(user.elixir);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [showTrophyBanner, setShowTrophyBanner] = useState(false);
@@ -222,7 +222,7 @@ export default function HomeGameInterface() {
         console.error("Error parsing saved challenge counts:", error);
       }
     }
-
+    if (!localStorage.getItem("userGold")) localStorage.setItem("userGold", 100)
     const savedGold = localStorage.getItem("userGold");
 
     if (savedGold) {
@@ -555,11 +555,11 @@ export default function HomeGameInterface() {
                                       </span>
 
                                       <span className="text-green-400 font-medium">
-                                        {building.health}%
+                                        {building.health}
                                       </span>
                                     </div>
 
-                                    <div className="flex justify-between text-xs">
+                                    {building.name !== "Study Hall" && <div className="flex justify-between text-xs">
                                       <span className="text-slate-400">
                                         Upgrade Level
                                       </span>
@@ -568,10 +568,10 @@ export default function HomeGameInterface() {
                                         {challengeCounts[building.assetId] || 0}
                                         /3
                                       </span>
-                                    </div>
+                                    </div>}
                                   </div>
 
-                                  <Button
+                                  {building.name !== "Study Hall" && <Button
                                     size="sm"
                                     className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
                                     onClick={async (e) => {
@@ -729,7 +729,7 @@ export default function HomeGameInterface() {
                                   >
                                     <Shield className="w-3 h-3 mr-1" />
                                     Accept Challenge ({building.costToUpgrade})
-                                  </Button>
+                                  </Button>}
                                 </>
                               )}
 
