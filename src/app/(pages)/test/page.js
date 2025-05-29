@@ -15,54 +15,54 @@ const testData = {
     duration: 10 * 60,
     questions: [
         {
-          id: "q1",
-          question: "If the roots of the equation x² - 5x + k = 0 are real and equal, then the value of k is:",
-          options: ["25", "5", "6.25", "None of these"],
-          answer: "6.25"
+            id: "q1",
+            question: "If the roots of the equation x² - 5x + k = 0 are real and equal, then the value of k is:",
+            options: ["25", "5", "6.25", "None of these"],
+            answer: "6.25"
         },
         {
-          id: "q2",
-          question: "Which of the following compounds exhibits resonance?",
-          options: ["C₂H₆", "CH₄", "CH₃COOH", "C₂H₅OH"],
-          answer: "CH₃COOH"
+            id: "q2",
+            question: "Which of the following compounds exhibits resonance?",
+            options: ["C₂H₆", "CH₄", "CH₃COOH", "C₂H₅OH"],
+            answer: "CH₃COOH"
         },
         {
-          id: "q3",
-          question: "A particle moves with uniform acceleration. Its velocity after 5 seconds is 20 m/s and after 10 seconds is 40 m/s. What is the acceleration?",
-          options: ["2 m/s²", "4 m/s²", "3 m/s²", "5 m/s²"],
-          answer: "4 m/s²"
+            id: "q3",
+            question: "A particle moves with uniform acceleration. Its velocity after 5 seconds is 20 m/s and after 10 seconds is 40 m/s. What is the acceleration?",
+            options: ["2 m/s²", "4 m/s²", "3 m/s²", "5 m/s²"],
+            answer: "4 m/s²"
         },
         {
-          id: "q4",
-          question: "Which of the following has the highest bond enthalpy?",
-          options: ["O₂", "N₂", "F₂", "Cl₂"],
-          answer: "N₂"
+            id: "q4",
+            question: "Which of the following has the highest bond enthalpy?",
+            options: ["O₂", "N₂", "F₂", "Cl₂"],
+            answer: "N₂"
         },
         {
-          id: "q5",
-          question: "The area enclosed between the curve y = x² and the line y = 4 is:",
-          options: ["8/3", "16/3", "32/3", "None of these"],
-          answer: "32/3"
+            id: "q5",
+            question: "The area enclosed between the curve y = x² and the line y = 4 is:",
+            options: ["8/3", "16/3", "32/3", "None of these"],
+            answer: "32/3"
         },
         {
-          id: "q6",
-          question: "Which among the following elements has the smallest atomic radius?",
-          options: ["Na", "Mg", "Al", "Si"],
-          answer: "Si"
+            id: "q6",
+            question: "Which among the following elements has the smallest atomic radius?",
+            options: ["Na", "Mg", "Al", "Si"],
+            answer: "Si"
         },
         {
-          id: "q7",
-          question: "The dimensional formula for Planck’s constant is:",
-          options: ["ML²T⁻¹", "ML²T⁻²", "MLT⁻²", "ML²T⁻³"],
-          answer: "ML²T⁻¹"
+            id: "q7",
+            question: "The dimensional formula for Planck’s constant is:",
+            options: ["ML²T⁻¹", "ML²T⁻²", "MLT⁻²", "ML²T⁻³"],
+            answer: "ML²T⁻¹"
         },
         {
-          id: "q8",
-          question: "If sinθ + cosθ = √2, then the value of tanθ is:",
-          options: ["1", "2", "√2", "0"],
-          answer: "1"
+            id: "q8",
+            question: "If sinθ + cosθ = √2, then the value of tanθ is:",
+            options: ["1", "2", "√2", "0"],
+            answer: "1"
         }
-      ],      
+    ],
 }
 
 export default function TestPage() {
@@ -75,7 +75,7 @@ export default function TestPage() {
     const [passed, setPassed] = useState(false)
     const [showModal, setShowModal] = useState(false)
 
-    
+
 
     const formatTime = (seconds) => {
         const minutes = Math.floor(seconds / 60)
@@ -88,9 +88,10 @@ export default function TestPage() {
     }
 
     const handleSubmit = () => {
-        const correctAnswers = {
-            q1: "React", q2: "Paris", q3: "CSS", q4: "HTML", q5: "Facebook", q6: "4"
-        }
+        const correctAnswers = {}
+        testData.questions.forEach((q) => {
+            correctAnswers[q.id] = q.answer
+        })
 
         let tempScore = 0
         testData.questions.forEach((question) => {
