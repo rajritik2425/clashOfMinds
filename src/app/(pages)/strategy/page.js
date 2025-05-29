@@ -1,19 +1,17 @@
-"use client"
-import { useEffect, useState, useRef } from "react"
-import Chart from "chart.js/auto"
-import { Button } from "../../components/ui/button"
-import { useRouter } from "next/navigation"
-import { useAuth } from "../../utils/AuthContext"
+'use client';
+import React, { useEffect, useState, useRef } from 'react';
+import Chart from 'chart.js/auto';
+import { Button } from '../../components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../utils/AuthContext';
+import Loading from '../../components/ui/loading';
 
 const StrategyPage = () => {
-  const [activeTab, setActiveTab] = useState("questions")
-  const [selectedTopic, setSelectedTopic] = useState(null)
-  const router = useRouter()
-  const { isAuthenticated } = useAuth()
-  if (!isAuthenticated) {
-    router.push("/login")
-  }
-
+  const [activeTab, setActiveTab] = useState('questions');
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const router = useRouter();
+  const {isAuthenticated} = useAuth();
+  
   // Mock data - in a real app this would come from strategyData.json
   const strategyData = [
     {
@@ -174,6 +172,12 @@ const StrategyPage = () => {
   const filteredQuestions = selectedTopic
     ? incorrectQuestions.filter((q) => q.topic === selectedTopic)
     : incorrectQuestions
+
+
+    if(!isAuthenticated){
+        return <Loading/>
+      }
+      
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 text-white p-4 md:p-8 font-sans">

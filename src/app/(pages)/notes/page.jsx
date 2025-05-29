@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/button"
 import { useAuth } from "../../utils/AuthContext"
 import { useRouter } from "next/navigation"
 import notesData from "./notesData.json"
+import Loading from "../../components/ui/loading"
 
 export default function NotesPage() {
   const { isAuthenticated } = useAuth()
@@ -48,7 +49,9 @@ export default function NotesPage() {
     setSelectedNote(null)
   }
 
-  if (!isAuthenticated) router.push('/login')
+  if (!isAuthenticated){
+    return <Loading/>
+  }
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-br from-gray-900 to-black text-white font-semibold">
