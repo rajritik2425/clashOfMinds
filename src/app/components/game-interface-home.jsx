@@ -1,41 +1,56 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "./ui/button"
-import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Settings, Shield, Play, Dumbbell, LogOut, Edit, Group } from "lucide-react"
-import Link from "next/link"
-import BattleLogsModal from "./BattleLogsModal"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
-import { Badge } from "./ui/badge"
-import TrainBattleModal from '../components/TrainBattleModal'
-import { useAuth } from "../utils/AuthContext"
-import Loading from "./ui/loading"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import TrophyBanner from "./TrophyBanner"
+import { useState, useEffect, useRef } from "react";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import {
+  User,
+  Trophy,
+  Sword,
+  Coins,
+  Zap,
+  HelpCircle,
+  ShoppingCart,
+  Settings,
+  Shield,
+  Play,
+  Dumbbell,
+  LogOut,
+  Edit,
+  Group,
+} from "lucide-react";
+import Link from "next/link";
+import BattleLogsModal from "./BattleLogsModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Badge } from "./ui/badge";
+import TrainBattleModal from "../components/TrainBattleModal";
+import { useAuth } from "../utils/AuthContext";
+import Loading from "./ui/loading";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import TrophyBanner from "./TrophyBanner";
 
 export default function HomeGameInterface() {
-  const { user, logout, token } = useAuth()
-  const [selectedCell, setSelectedCell] = useState(null)
-  const [hoveredCell, setHoveredCell] = useState(null)
-  const [trophies, setTrophies] = useState(0)
-  const hoverTimeoutRef = useRef(null)
-  const isHoveringPopupRef = useRef(false)
-  const [buildingsData, setBuildingsData] = useState([])
-  const [challengeCounts, setChallengeCounts] = useState({})
-  const [showTrainModal, setShowTrainModal] = useState(false)
-  const [showShopModal, setShowShopModal] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileRef = useRef(null)
-  const [gold, setGold] = useState(0)
-  const [elixir, setElixir] = useState(0)
+  const { user, logout, token } = useAuth();
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [hoveredCell, setHoveredCell] = useState(null);
+  const [trophies, setTrophies] = useState(0);
+  const hoverTimeoutRef = useRef(null);
+  const isHoveringPopupRef = useRef(false);
+  const [buildingsData, setBuildingsData] = useState([]);
+  const [challengeCounts, setChallengeCounts] = useState({});
+  const [showTrainModal, setShowTrainModal] = useState(false);
+  const [showShopModal, setShowShopModal] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const [gold, setGold] = useState(0);
+  const [elixir, setElixir] = useState(0);
   const [loading, setLoading] = useState(false);
-  const router = useRouter()
-  const [showTrophyBanner, setShowTrophyBanner] = useState(false)
+  const router = useRouter();
+  const [showTrophyBanner, setShowTrophyBanner] = useState(false);
 
-  const gridSize = 10
-  const totalCells = gridSize * gridSize
+  const gridSize = 10;
+  const totalCells = gridSize * gridSize;
 
   const shopItems = [
     {
@@ -118,26 +133,26 @@ export default function HomeGameInterface() {
         "+6 Analysis & strategy sessions",
       ],
     },
-  ]
+  ];
 
   const fetchBaseData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await fetch(`/api/resources/${user._id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       // Initialize empty grid
       const tempGrid = Array(gridSize)
         .fill(null)
-        .map(() => Array(gridSize).fill(null))
+        .map(() => Array(gridSize).fill(null));
 
       // Place buildings at their correct positions
-      data.base.forEach((building) => { 
+      data.base.forEach((building) => {
         const [row, col] = building.index;
         tempGrid[row][col] = {
           name: building.name,
@@ -149,87 +164,107 @@ export default function HomeGameInterface() {
         };
       });
 
-
-      setBuildingsData(tempGrid)
-      setLoading(false)
+      setBuildingsData(tempGrid);
+      setLoading(false);
     } catch (error) {
-      console.error("Error fetching base data:", error)
+      console.error("Error fetching base data:", error);
     }
-  }
-  const [showModal, setShowModal] = useState(false)
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch("/api/user/me", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setGold(userData.gold || 0);
+        setElixir(userData.elixir || 0);
+        setTrophies(userData.trophies || 0);
+      } else {
+        console.error("Failed to fetch user data:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (user && token) {
-      fetchBaseData()
+      fetchBaseData();
     }
-  }, [user, token])
+  }, [user, token]);
 
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current)
+        clearTimeout(hoverTimeoutRef.current);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   const clearHoverTimeout = () => {
     if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current)
-      hoverTimeoutRef.current = null
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
     }
-  }
+  };
 
   const handleCellMouseEnter = (cellIndex) => {
-    clearHoverTimeout()
-    setHoveredCell(cellIndex)
-  }
+    clearHoverTimeout();
+    setHoveredCell(cellIndex);
+  };
 
   const handleCellMouseLeave = () => {
     // Only start the timeout if we're not hovering over the popup
     if (!isHoveringPopupRef.current) {
       hoverTimeoutRef.current = setTimeout(() => {
-        setHoveredCell(null)
-      }, 500) // Increased delay for better UX
+        setHoveredCell(null);
+      }, 500); // Increased delay for better UX
     }
-  }
+  };
 
   const handlePopupMouseEnter = () => {
-    clearHoverTimeout()
-    isHoveringPopupRef.current = true
-  }
+    clearHoverTimeout();
+    isHoveringPopupRef.current = true;
+  };
 
   const handlePopupMouseLeave = () => {
-    isHoveringPopupRef.current = false
+    isHoveringPopupRef.current = false;
     hoverTimeoutRef.current = setTimeout(() => {
-      setHoveredCell(null)
-    }, 200) // Shorter delay when leaving popup
-  }
+      setHoveredCell(null);
+    }, 200); // Shorter delay when leaving popup
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsProfileOpen(false)
+        setIsProfileOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
-  if (buildingsData.length === 0) return null
+  if (buildingsData.length === 0) return null;
 
   const difficulties = [
     { level: "Easy", image: "/images/easy.webp", points: +5 },
     { level: "Medium", image: "/images/medium.webp", points: +2 },
     { level: "Hard", image: "/images/hard.webp", points: +1 },
-  ]
-
-
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
@@ -248,8 +283,7 @@ export default function HomeGameInterface() {
               <Button
                 size="lg"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30"
-              >
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 border border-blue-400/30">
                 <User className="w-5 h-5 mr-2" />
                 Profile
               </Button>
@@ -258,15 +292,16 @@ export default function HomeGameInterface() {
                 <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-lg border border-slate-700 py-2 z-50">
                   <div className="px-4 py-2 border-b border-slate-700">
                     <p className="text-sm text-slate-300">Signed in as</p>
-                    <p className="text-white font-medium truncate">{user?.name}</p>
+                    <p className="text-white font-medium truncate">
+                      {user?.name}
+                    </p>
                   </div>
                   <Button
                     onClick={() => {
-                      logout()
-                      setIsProfileOpen(false)
+                      logout();
+                      setIsProfileOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center gap-2"
-                  >
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700 flex items-center gap-2">
                     <LogOut className="w-4 h-4" />
                     Sign out
                   </Button>
@@ -278,15 +313,13 @@ export default function HomeGameInterface() {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
+                className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700">
                 <Settings className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
+                className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700">
                 <Play className="w-4 h-4" />
               </Button>
             </div>
@@ -301,8 +334,7 @@ export default function HomeGameInterface() {
                 <Button
                   variant="outline"
                   className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white border-amber-500/30 font-bold"
-                  onClick={() => setShowTrophyBanner(true)}
-                >
+                  onClick={() => setShowTrophyBanner(true)}>
                   <div className="flex gap-2 items-center">
                     <Trophy className="w-4 h-4" />
                     <span>Trophies</span>
@@ -314,14 +346,14 @@ export default function HomeGameInterface() {
 
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4">
-                <Button
-                  variant="outline"
-                  className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-red-500/30 font-bold"
-                  onClick={() => router.push('/attack')}
-                >
-                  <Sword className="w-4 h-4 mr-2" />
-                  Attack
-                </Button>
+                <Link href="/attack">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white border-red-500/30 font-bold">
+                    <Sword className="w-4 h-4 mr-2" />
+                    Attack
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -330,8 +362,7 @@ export default function HomeGameInterface() {
                 <Button
                   onClick={() => setShowTrainModal(true)}
                   variant="outline"
-                  className="w-full bg-green-500 hover:from-yellow-600 hover:to-orange-600 text-white border-yellow-400/30 font-bold"
-                >
+                  className="w-full bg-green-500 hover:from-yellow-600 hover:to-orange-600 text-white border-yellow-400/30 font-bold">
                   <Dumbbell className="w-4 h-4 mr-2" />
                   Train
                 </Button>
@@ -340,21 +371,31 @@ export default function HomeGameInterface() {
                 {difficulties.map((d) => (
                   <div
                     key={d.level}
-                    className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full"
-                  >
-                    <Image src={d.image} alt={d.level} width={30} height={30} className="mx-auto mb-2" />
+                    className="cursor-pointer p-1 border border-yellow-400 rounded-lg bg-slate-800 hover:bg-yellow-900/20 text-center w-full">
+                    <Image
+                      src={d.image}
+                      alt={d.level}
+                      width={30}
+                      height={30}
+                      className="mx-auto mb-2"
+                    />
                     <p className="font-bold text-xs">{d.level}</p>
                     <p className="text-yellow-400 text-xs">Count: {d.points}</p>
                   </div>
                 ))}
               </div>
             </Card>
-            <TrainBattleModal showModal={showTrainModal} setShowModal={setShowTrainModal} />
+            <TrainBattleModal
+              showModal={showTrainModal}
+              setShowModal={setShowTrainModal}
+            />
 
             {/* Battle Stats */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-2">
-                <div className="text-xs text-slate-400 uppercase tracking-wide">Battle Stats</div>
+                <div className="text-xs text-slate-400 uppercase tracking-wide">
+                  Battle Stats
+                </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-300">Wins</span>
@@ -366,10 +407,9 @@ export default function HomeGameInterface() {
                   </div>
                   <span
                     onClick={() => {
-                      setShowModal(true)
+                      setShowModal(true);
                     }}
-                    className="text-sm cursor-pointer underline text-blue-200"
-                  >
+                    className="text-sm cursor-pointer underline text-blue-200">
                     📜 View Battle Logs
                   </span>
                 </div>
@@ -392,158 +432,136 @@ export default function HomeGameInterface() {
                 {/* Game Grid */}
                 <div className="grid grid-cols-10 gap-1 p-4 bg-slate-900/50 rounded-2xl border border-slate-600/30">
                   {Array.from({ length: totalCells }, (_, i) => {
-                    const row = Math.floor(i / gridSize)
-                    const col = i % gridSize
-                    const building = buildingsData[row][col]
-                    const isTownHallCell = (row === 4 || row === 5) && (col === 4 || col === 5)
-                    const isTopLeftTownHall = row === 4 && col === 4
-
-                    // Skip rendering other town hall cells except top-left
-                    if (isTownHallCell && !isTopLeftTownHall) {
-                      return null
-                    }
+                    const row = Math.floor(i / gridSize);
+                    const col = i % gridSize;
+                    const building = buildingsData[row][col];
 
                     return (
                       <div
                         key={i}
                         className={`
-                          aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
-                          ${isTopLeftTownHall
-                            ? "col-span-2 row-span-2 bg-slate-800/50 hover:cursor-pointer"
-                            : selectedCell === i
-                              ? "bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-cyan-400 shadow-lg shadow-cyan-500/25 cursor-pointer"
-                              : hoveredCell === i
-                                ? "bg-slate-700/50 border-slate-500 cursor-pointer"
-                                : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
+                          p-1 aspect-square border border-slate-600/50 rounded-lg transition-all duration-200 relative
+                          ${
+                            hoveredCell === i
+                              ? "bg-slate-700/50 border-slate-500 cursor-pointer"
+                              : "bg-slate-800/30 hover:bg-slate-700/50 cursor-pointer"
                           }
                         `}
-                        style={isTopLeftTownHall ? { gridColumn: "span 2", gridRow: "span 2" } : {}}
                         onMouseEnter={() => handleCellMouseEnter(i)}
-                        onMouseLeave={handleCellMouseLeave}
-                      >
-                        {isTopLeftTownHall ? (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center">
-                              <img
-                                src="/TOWN_HALL_BASE.png"
-                                alt="Town Hall"
-                                className="w-full h-full object-contain p-2"
-                              />
-                              {hoveredCell === i && (
-                                <div className="absolute top-0 left-0 right-0 bg-slate-900/90 text-white p-2 rounded-t-lg z-10">
-                                  <div className="text-sm font-bold">Town Hall</div>
-                                  <div className="text-xs text-slate-300">Level 1</div>
-                                </div>
+                        onMouseLeave={handleCellMouseLeave}>
+                        {building && (
+                          <img
+                            src={building.image || "/placeholder.svg"}
+                            alt={building.name}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        )}
+                        {hoveredCell === i && building && (
+                          <div
+                            className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
+                            onMouseEnter={handlePopupMouseEnter}
+                            onMouseLeave={handlePopupMouseLeave}>
+                            <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
+                              {building.name === "PW Mine" ? (
+                                <Button
+                                  size="sm"
+                                  className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-yellow-500/25 border border-yellow-400/30"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Add gold collection logic here
+                                    console.log("Collecting gold from PW Mine");
+                                  }}>
+                                  <Coins className="w-3 h-3 mr-1" />
+                                  Collect Gold
+                                </Button>
+                              ) : building.name === "Elixir Collector" ? (
+                                <Button
+                                  size="sm"
+                                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-purple-500/25 border border-purple-400/30"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Add elixir collection logic here
+                                    console.log(
+                                      "Collecting elixir from Elixir Collector"
+                                    );
+                                  }}>
+                                  <Zap className="w-3 h-3 mr-1" />
+                                  Collect Elixir
+                                </Button>
+                              ) : (
+                                <>
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
+                                      <img
+                                        src={
+                                          building.image || "/placeholder.svg"
+                                        }
+                                        alt={building.name}
+                                        className="w-full h-full object-cover rounded-md"
+                                      />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-bold text-white">
+                                        {building.name}
+                                      </div>
+                                      <div className="text-xs text-slate-300">
+                                        Level {building.level}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2 mb-4">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-slate-400">
+                                        Health
+                                      </span>
+                                      <span className="text-green-400 font-medium">
+                                        {building.health}%
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-slate-400">
+                                        Upgrade Level
+                                      </span>
+                                      <span className="text-yellow-400 font-medium">
+                                        {challengeCounts[building.assetId] || 0}
+                                        /10
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const assetId = building.assetId;
+                                      setChallengeCounts((prev) => {
+                                        const currentCount = prev[assetId] || 0;
+                                        const newCount = currentCount + 1;
+                                        return newCount >= 10
+                                          ? { ...prev, [assetId]: 0 }
+                                          : { ...prev, [assetId]: newCount };
+                                      });
+                                    }}>
+                                    <Shield className="w-3 h-3 mr-1" />
+                                    Accept Challenge
+                                  </Button>
+                                </>
                               )}
+
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
+                              </div>
                             </div>
                           </div>
-                        ) : (
-                          <>
-                            {building && (
-                              <img
-                                src={building.image || "/placeholder.svg"}
-                                alt={building.name}
-                                className="w-full h-full object-cover rounded-lg"
-                              />
-                            )}
-                            {hoveredCell === i && building && (
-                              <div
-                                className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-20 w-48"
-                                onMouseEnter={handlePopupMouseEnter}
-                                onMouseLeave={handlePopupMouseLeave}
-                              >
-                                <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-xl shadow-black/50">
-                                  {building.name === "PW Mine" ? (
-                                    <Button
-                                      size="sm"
-                                      className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-yellow-500/25 border border-yellow-400/30"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        // Add gold collection logic here
-                                        console.log("Collecting gold from PW Mine")
-                                      }}
-                                    >
-                                      <Coins className="w-3 h-3 mr-1" />
-                                      Collect Gold
-                                    </Button>
-                                  ) : building.name === "Elixir Collector" ? (
-                                    <Button
-                                      size="sm"
-                                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-purple-500/25 border border-purple-400/30"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        // Add elixir collection logic here
-                                        console.log("Collecting elixir from Elixir Collector")
-                                      }}
-                                    >
-                                      <Zap className="w-3 h-3 mr-1" />
-                                      Collect Elixir
-                                    </Button>
-                                  ) : (
-                                    <>
-                                      <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-lg bg-slate-700/50 p-1">
-                                          <img
-                                            src={building.image || "/placeholder.svg"}
-                                            alt={building.name}
-                                            className="w-full h-full object-cover rounded-md"
-                                          />
-                                        </div>
-                                        <div>
-                                          <div className="text-sm font-bold text-white">{building.name}</div>
-                                          <div className="text-xs text-slate-300">Level {building.level}</div>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2 mb-4">
-                                        <div className="flex justify-between text-xs">
-                                          <span className="text-slate-400">Health</span>
-                                          <span className="text-green-400 font-medium">{building.health}%</span>
-                                        </div>
-                                        <div className="flex justify-between text-xs">
-                                          <span className="text-slate-400">Upgrade Level</span>
-                                          <span className="text-yellow-400 font-medium">
-                                            {challengeCounts[building.assetId] || 0}/10
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      <Button
-                                        size="sm"
-                                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold text-xs py-2 rounded-lg shadow-lg shadow-orange-500/25 border border-orange-400/30"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          const assetId = building.assetId
-                                          setChallengeCounts((prev) => {
-                                            const currentCount = prev[assetId] || 0
-                                            const newCount = currentCount + 1
-                                            return newCount >= 10
-                                              ? { ...prev, [assetId]: 0 }
-                                              : { ...prev, [assetId]: newCount }
-                                          })
-                                          if (building.name === 'Revision Lab') router.push('/notes')
-                                          else if (building.name === 'Strategy Lab') router.push('/strategy')
-                                          else if (building.name === 'Live Arena' || building.name === 'Lecture Hall') router.push('/video')
-                                          else if (building.name === 'DPP Tower') router.push('/test')
-                                          else if (building.name === 'Mock Tower') router.push('/test/instructions')
-                                        }}
-                                      >
-                                        <Shield className="w-3 h-3 mr-1" />
-                                        Accept Challenge
-                                      </Button>
-                                    </>
-                                  )}
-
-                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2">
-                                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </>
                         )}
+
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                          <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-800/95" />
+                        </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </CardContent>
@@ -555,7 +573,9 @@ export default function HomeGameInterface() {
             {/* Resource Details */}
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-3">
-                <div className="text-xs text-slate-400 uppercase tracking-wide">Resources</div>
+                <div className="text-xs text-slate-400 uppercase tracking-wide">
+                  Resources
+                </div>
 
                 <div className="space-y-4">
                   {/* Gold */}
@@ -565,12 +585,16 @@ export default function HomeGameInterface() {
                         <Coins className="w-4 h-4 text-yellow-400" />
                         <span className="text-sm text-slate-300">Gold</span>
                       </div>
-                      <span className="text-yellow-400 font-bold">{gold} / 1000</span>
+                      <span className="text-yellow-400 font-bold">
+                        {gold} / 1000
+                      </span>
                     </div>
                     <div className="w-full h-2 bg-slate-700 rounded-full">
                       <div
                         className="h-full bg-yellow-400 rounded-full"
-                        style={{ width: `${Math.min((gold / 1000) * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min((gold / 1000) * 100, 100)}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -582,12 +606,16 @@ export default function HomeGameInterface() {
                         <Zap className="w-4 h-4 text-purple-400" />
                         <span className="text-sm text-slate-300">Elixir</span>
                       </div>
-                      <span className="text-purple-400 font-bold">{elixir} / 1000</span>
+                      <span className="text-purple-400 font-bold">
+                        {elixir} / 1000
+                      </span>
                     </div>
                     <div className="w-full h-2 bg-slate-700 rounded-full">
                       <div
                         className="h-full bg-purple-400 rounded-full"
-                        style={{ width: `${Math.min((elixir / 1000) * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min((elixir / 1000) * 100, 100)}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -602,7 +630,10 @@ export default function HomeGameInterface() {
                       <span className="text-blue-400 font-bold">10 / 50</span>
                     </div>
                     <div className="w-full h-2 bg-slate-700 rounded-full">
-                      <div className="h-full bg-blue-400 rounded-full" style={{ width: "20%" }} />
+                      <div
+                        className="h-full bg-blue-400 rounded-full"
+                        style={{ width: "20%" }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -614,8 +645,7 @@ export default function HomeGameInterface() {
                 <Button
                   size="lg"
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-green-500/25 border border-green-400/30"
-                  onClick={() => setShowShopModal(true)}
-                >
+                  onClick={() => setShowShopModal(true)}>
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Shop
                 </Button>
@@ -623,27 +653,24 @@ export default function HomeGameInterface() {
             </Card>
 
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-            <Link href='base-edit'>
-              <CardContent className="p-4">
-                <Button
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
-                  onClick={() => setShowShopModal(true)}
-                >
-                  <Edit className="w-5 h-5 mr-2" />
-                  Edit
-                </Button>
-              </CardContent>
+              <Link href="base-edit">
+                <CardContent className="p-4">
+                  <Button
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30">
+                    <Edit className="w-5 h-5 mr-2" />
+                    Edit
+                  </Button>
+                </CardContent>
               </Link>
             </Card>
 
             <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
-              <Link href='clan'>
+              <Link href="clan">
                 <CardContent className="p-4">
                   <Button
                     size="lg"
-                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30"
-                  >
+                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-600 hover:from-yellow-700 hover:to-yellow-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-500/25 border border-green-400/30">
                     <Group className="w-5 h-5 mr-2" />
                     Clan
                   </Button>
@@ -654,34 +681,32 @@ export default function HomeGameInterface() {
             {/* Quick Actions */}
             {/* <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
               <CardContent className="p-4 space-y-2">
-                <div className="text-xs text-slate-400 uppercase tracking-wide">Quick Actions</div>
+                <div className="text-xs text-slate-400 uppercase tracking-wide">
+                  Quick Actions
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600"
-                  >
+                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600">
                     Build
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600"
-                  >
+                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600">
                     Upgrade
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600"
-                  >
+                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600">
                     Move
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600"
-                  >
+                    className="bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-600">
                     Delete
                   </Button>
                 </div>
@@ -702,9 +727,9 @@ export default function HomeGameInterface() {
               {shopItems.map((item) => (
                 <Card
                   key={item.id}
-                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 mt-2 relative ${item.purchased ? "border-green-500/50 bg-green-900/20" : ""
-                    }`}
-                >
+                  className={`bg-slate-700/50 border-slate-600 hover:border-slate-500 transition-all duration-200 relative ${
+                    item.purchased ? "border-green-500/50 bg-green-900/20" : ""
+                  }`}>
                   {item.discount && (
                     <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold">
                       -{item.discount}% OFF
@@ -729,30 +754,46 @@ export default function HomeGameInterface() {
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="font-bold text-white text-lg">{item.name}</h3>
-                            <p className="text-sm text-slate-300 mt-1">{item.description}</p>
-                            <Badge variant="outline" className="text-xs border-slate-500 text-slate-300 mt-2">
+                            <h3 className="font-bold text-white text-lg">
+                              {item.name}
+                            </h3>
+                            <p className="text-sm text-slate-300 mt-1">
+                              {item.description}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-slate-500 text-slate-300 mt-2">
                               {item.category}
                             </Badge>
                           </div>
 
                           <div className="text-right">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-400 line-through">₹{item.originalPrice}</span>
-                              <span className="text-lg font-bold text-white">₹{item.price}</span>
+                              <span className="text-sm text-slate-400 line-through">
+                                ₹{item.originalPrice}
+                              </span>
+                              <span className="text-lg font-bold text-white">
+                                ₹{item.price}
+                              </span>
                             </div>
                             {item.canUpgrade && (
-                              <div className="text-sm text-yellow-400 mt-1">Upgrade: ₹{item.upgradePrice}</div>
+                              <div className="text-sm text-yellow-400 mt-1">
+                                Upgrade: ₹{item.upgradePrice}
+                              </div>
                             )}
                           </div>
                         </div>
 
                         {/* Perks Section */}
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-slate-300 mb-2">What you get:</h4>
+                          <h4 className="text-sm font-semibold text-slate-300 mb-2">
+                            What you get:
+                          </h4>
                           <div className="grid grid-cols-2 gap-1">
                             {item.perks.map((perk, index) => (
-                              <div key={index} className="flex items-center gap-1 text-xs text-slate-400">
+                              <div
+                                key={index}
+                                className="flex items-center gap-1 text-xs text-slate-400">
                                 <div className="w-1 h-1 bg-green-400 rounded-full"></div>
                                 <span>{perk}</span>
                               </div>
@@ -767,8 +808,7 @@ export default function HomeGameInterface() {
                                 size="sm"
                                 variant="outline"
                                 className="flex-1 border-green-500 text-green-400 hover:bg-green-500/20"
-                                disabled
-                              >
+                                disabled>
                                 ✓ Purchased
                               </Button>
                               {item.canUpgrade && (
@@ -776,9 +816,10 @@ export default function HomeGameInterface() {
                                   size="sm"
                                   className="flex-1 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white font-bold"
                                   onClick={() => {
-                                    console.log(`Upgrading: ${item.name} for ₹${item.upgradePrice}`)
-                                  }}
-                                >
+                                    console.log(
+                                      `Upgrading: ${item.name} for ₹${item.upgradePrice}`
+                                    );
+                                  }}>
                                   Upgrade Now
                                 </Button>
                               )}
@@ -788,9 +829,10 @@ export default function HomeGameInterface() {
                               size="sm"
                               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold"
                               onClick={() => {
-                                console.log(`Purchased: ${item.name} for ₹${item.price}`)
-                              }}
-                            >
+                                console.log(
+                                  `Purchased: ${item.name} for ₹${item.price}`
+                                );
+                              }}>
                               Buy Now
                             </Button>
                           )}
@@ -816,5 +858,5 @@ export default function HomeGameInterface() {
         </Dialog>
       </div>
     </div>
-  )
+  );
 }
