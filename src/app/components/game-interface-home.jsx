@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
-import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Shield, Dumbbell, LogOut, Edit } from "lucide-react"
+import { User, Trophy, Sword, Coins, Zap, HelpCircle, ShoppingCart, Shield, Dumbbell, LogOut, Edit, Group } from "lucide-react"
 import Link from "next/link"
 import BattleLogsModal from "./BattleLogsModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
